@@ -1,9 +1,23 @@
 ---
-title: "My Website"
+title: Welcome!
+output: html_document
 ---
 
-Hello, Website!
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
-For more information about simple R Markdown websites, please read the documentation at https://bookdown.org/yihui/rmarkdown/rmarkdown-site.html.
+```{css, echo = FALSE}
+h1, h2, h3, h4 {text-align: center;}
+h1  {color:#FFFAF0;
+    background-color: #708090; 
+    padding: 20px;
+    font-weight:bold;}
+h4 {background-color: #A52A2A;
+    color:#FFFAF0;
+    padding: 12px}
+```
 
-Please also note that simple R Markdown sites are _not_ based on **blogdown**. They are probably good for websites with only a few Rmd documents. For larger-scale and more sophisticated websites (such as blogs), you may want to use **blogdown** instead: https://github.com/rstudio/blogdown.
+## hεləʊ!
+<br>
+This site is currently under development.

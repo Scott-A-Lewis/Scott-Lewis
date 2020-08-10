@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1597075589272.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2276779094",
+    "id" : "53BBFF1E",
+    "lastKnownWriteTime" : 1597075726,
+    "last_content_update" : 1597075727016,
+    "path" : "~/GitHub/Scott-Lewis/Plotting_file.Rmd",
+    "project_path" : "Plotting_file.Rmd",
+    "properties" : {
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}
