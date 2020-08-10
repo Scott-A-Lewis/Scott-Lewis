@@ -1,12 +1,15 @@
 name: "Scott Lewis"
 navbar:
   title: "Scott Lewis"
-  left:
+  right:
     - text: "Home"
       href: index.html
     - text: "Plotting"
-      icon: <ion-icon name="cellular-outline"></ion-icon>
+      icon: ion-icon name="cellular-outline"
       menu:
         - text: "Barplots"
           href: Plotting_file.html
+          
+  
+
 

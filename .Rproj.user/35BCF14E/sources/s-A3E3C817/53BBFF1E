@@ -5,13 +5,15 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "2276779094",
+    "hash" : "0",
     "id" : "53BBFF1E",
     "lastKnownWriteTime" : 1597075726,
     "last_content_update" : 1597075727016,
     "path" : "~/GitHub/Scott-Lewis/Plotting_file.Rmd",
     "project_path" : "Plotting_file.Rmd",
     "properties" : {
+        "cursorPosition" : "11,19",
+        "scrollLine" : "0"
     },
     "read_only" : false,
     "read_only_alternatives" : [
