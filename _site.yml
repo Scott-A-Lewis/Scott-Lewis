@@ -1,9 +1,11 @@
 name: "Scott Lewis"
 navbar:
   title: "Scott Lewis"
-  right:
+  left:
     - text: "Home"
       href: index.html
+      
+  right:
     - text: "Plotting"
       icon: ion-icon name="cellular-outline"
       menu:
