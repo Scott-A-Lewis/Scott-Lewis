@@ -1,6 +1,7 @@
 ---
 title: Welcome!
 output: html_document
+theme: cosmo
 ---
 
 ```{r setup, include=FALSE}

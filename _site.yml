@@ -11,6 +11,12 @@ navbar:
       menu:
         - text: "Barplots"
           href: Plotting_file.html
+
+
+
+
+#To add image instead of name for title, eg.
+#title: "<img id=\"logo\" style=\"width: 30px;\" src=\"dog.gif\" />"
           
   
 

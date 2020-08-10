@@ -5,14 +5,14 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "4032938820",
+    "hash" : "1550233319",
     "id" : "CEBC8437",
-    "lastKnownWriteTime" : 1597076136,
-    "last_content_update" : 1597076136297,
+    "lastKnownWriteTime" : 1597086125,
+    "last_content_update" : 1597086125369,
     "path" : "~/GitHub/Scott-Lewis/index.Rmd",
     "project_path" : "index.Rmd",
     "properties" : {
-        "cursorPosition" : "22,41",
+        "cursorPosition" : "3,12",
         "scrollLine" : "0"
     },
     "read_only" : false,

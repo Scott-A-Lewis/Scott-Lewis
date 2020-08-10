@@ -1,6 +1,7 @@
 ---
 title: Functions for plotting
 output: html_document
+theme: paper
 ---
 
 ```{r setup, include=FALSE}
