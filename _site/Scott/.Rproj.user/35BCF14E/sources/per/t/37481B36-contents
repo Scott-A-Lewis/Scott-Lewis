@@ -8,5 +8,8 @@ navbar:
       icon: <ion-icon name="cellular-outline"></ion-icon>
       menu:
         - text: "Barplots"
-          href: plot_codes.html
-
+        href:  href: plot_codes.html
+        
+output:
+  html_document
+  theme: cosmo
