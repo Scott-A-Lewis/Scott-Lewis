@@ -11,7 +11,7 @@
 
 
 
-<title>Untitled</title>
+<title>Functions for plotting – Barplots</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -25,13 +25,6 @@
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<script src="site_libs/htmlwidgets-1.5.1/htmlwidgets.js"></script>
-<script src="site_libs/plotly-binding-4.9.2.1/plotly.js"></script>
-<script src="site_libs/typedarray-0.1/typedarray.min.js"></script>
-<link href="site_libs/crosstalk-1.1.0.1/css/crosstalk.css" rel="stylesheet" />
-<script src="site_libs/crosstalk-1.1.0.1/js/crosstalk.min.js"></script>
-<link href="site_libs/plotly-htmlwidgets-css-1.52.2/plotly-htmlwidgets.css" rel="stylesheet" />
-<script src="site_libs/plotly-main-1.52.2/plotly-latest.min.js"></script>
 <link href="site_libs/ionicons-2.0.1/css/ionicons.min.css" rel="stylesheet" />
 
 <style type="text/css">code{white-space: pre;}</style>
@@ -386,16 +379,101 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Untitled</h1>
+<h1 class="title toc-ignore">Functions for plotting – Barplots</h1>
 
 </div>
 
 
-<div id="column" class="section level2" data-width="650">
-<h2>Column</h2>
-<div id="chart-a" class="section level3">
-<h3>Chart A</h3>
+<style type="text/css">
+h1, h2, h3 {text-align: center;}
+h1  {color:#FFFAF0;
+    background-color: #708090; 
+    padding: 20px;
+    font-weight:bold;}
+h4 {background-color: #A52A2A;
+    color:#FFFAF0;
+    padding: 12px}
+</style>
+<div id="a-function-to-create-and-easily-save-barplots" class="section level2">
+<h2>A function to create and easily save barplots</h2>
+<p>
+The following function was designed to create barplots and save them automatically.
+</p>
+<p>
+It was developed for a project that required the creation of a large number of barplots, each of which needed the x-axis label to be changed. Having the function rapidly reduced the time needed to do this.
+</p>
+<p>
+I was working with multiple dataframes. Within each of these dataframes were a large number of columns that needed to be plotted. These had unfriendly names and so I wanted to relabel them for plotting purposes.
+</p>
+<p>
+I also wanted to ensure that percentage labels occured above bars in each plot. This was done for ease of readibility, as the plots were designed for lay readers.
+</p>
+<p>
+To that end, within the function, the user is asked to provide three arguments:
+</p>
+<ul>
+<li>
+‘data’ is a dataframe.
+</li>
+<li>
+‘column’ is the name of any column in the dataframe.
+</li>
+<li>
+‘legend.label’ is an optional argument. If the user wants to rename the column for plotting purposes, they need to specify the name in quotation marks, writing, for example <em>legend.label = “New Name”</em>. If this is not done, then the column name from the dataframe will be used to label the x-axis title (with nothing being renamed). <strong>In each case, the dataframe itself is not changed</strong>. The function <em>only</em> creates a graph and does not alter the original data.
+</li>
+<p>
+<p><strong>A quick note: dplyr and ggplot2 packages must be loaded for this function to work.</strong>The packages can be loaded by typing:</p>
+<pre><code>library(dplyr)
+library(ggplot2)</code></pre>
+</p>
+<pre><code>plot_column &lt;- function(data, column, legend.label = quo(column)){
+  
+  ###This function requires the following packages: dplyr and ggplot2.
+  
+  ##deparse(substitute(data)) is used to convert the name of the data into a string
+  ##This helps construct the filename to save the image later.
+  data_name &lt;- deparse(substitute(data))
+  
+  ## enquo captures expressions that you supply, in this case the column name.
+  column &lt;- enquo(column)
+  
+  ##dplyr is used to find percentages to plot on the y-axis 
+  data2 &lt;- data %&gt;% 
+    ##!! unquotes
+    group_by(!!column) %&gt;% 
+    count() %&gt;% 
+    ungroup() %&gt;% 
+    
+    ##Ceiling is used below to round up. I didn&#39;t want to include decimal places. If you don&#39;t want to do this, delete the word &#39;ceiling&#39; and remove the corresponding set of brackets to the right, so the line below instead reads: mutate(percent=100*(`n`/sum(`n`))) %&gt;%   
+    
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %&gt;%
+    mutate(!!column := as.factor(!!column)) %&gt;% 
+
+  print(data2)
+  ##Prints the updated data, including count and percentage
+  
+  ##Plotting is done with the code below
+  plot &lt;- ggplot(data2, aes(x = !!column, fill = !!column)) + geom_col(aes(y = percent)) + 
+    theme_classic() + theme(legend.position = &quot;none&quot;) + xlab(legend.label) + ylab(&quot;Percent&quot;) + 
+    geom_text(aes(label = paste0(percent, &quot;%&quot;), y = percent), vjust = -0.5)
+    
+  ##ggsave is used to save the file. The code below takes the name of the data and the legend label. 
+  #It adds _bar and saves it as a .png file.
+  ggsave(paste0(data_name, legend.label, &quot;_bar&quot;, &quot;.png&quot;, sep=&quot;&quot;), plot, device = &quot;png&quot;)
+  
+  #The plot is then displayed in the console
+  plot
+}
+</code></pre>
+<div id="running-the-function" class="section level3">
+<h3>Running the Function</h3>
+<p>
+In order to see how the function works, let’s first create an example dataframe. This dataframe, imaginatively called <em>fake_data</em> has just two columns, but we’ll focus on the first here. The column name “X.1.What.Is.Your.Age” is an example of the sort of ugly column name that can result when complicated heading names are read into R. Within the column are example results.
+</p>
 <pre class="r"><code>fake_data &lt;- data.frame(&quot;X.1.What.Is.Your.Age?&quot; = c(&quot;26-30&quot;, &quot;26-30&quot;, &quot;26-30&quot;, &quot;31-35&quot;, &quot;31-35&quot;, &quot;36-40&quot;, &quot;36-40&quot;, &quot;36-40&quot;, &quot;41-45&quot;, &quot;46-50&quot;), &quot;X.2.What.Is.Your.Occupation?&quot; = c(&quot;Magician&quot;, &quot;Swamp Monster&quot;, &quot;Magician&quot;, &quot;Magician&quot;, &quot;Doctor&quot;, &quot;Doctor&quot;, &quot;Accountant&quot;, &quot;Accountant&quot;, &quot;Magician&quot;, &quot;Cleaner&quot;))  </code></pre>
+<p>
+The dataframe looks like this:
+</p>
 <pre class="r"><code>print(fake_data)</code></pre>
 <pre><code>##    X.1.What.Is.Your.Age. X.2.What.Is.Your.Occupation.
 ## 1                  26-30                     Magician
@@ -408,29 +486,91 @@ div.tocify {
 ## 8                  36-40                   Accountant
 ## 9                  41-45                     Magician
 ## 10                 46-50                      Cleaner</code></pre>
-<center>
+<p>
+Now to use the function. Having pasted the function into the r console, I can call it using plot_column. I need to specify the arguments (data, column and, optionally, legend.label). I want to plot the first column, which is about the participants’ age groups. The name ‘X.1.What.Is.Your.Age.’ might not make for the prettiest of x-axis label, so I want to change this to ‘Age’. Therefore, I’m going to use the optional argument <em>legend.label</em>.
+</p>
+<p>
+To plot the column of interest, I call: plot_column(fake_data, column = X.1.What.Is.Your.Age., legend.label = “Age”).
+</p>
+<p>
+The results of doing so are plotted below:
+</p>
 <pre class="r"><code>plot_column(fake_data, column = X.1.What.Is.Your.Age., legend.label = &quot;Age&quot;)</code></pre>
-<pre><code>## # A tibble: 5 x 4
-##   column percent     n Age  
-##   &lt;fct&gt;    &lt;dbl&gt; &lt;int&gt; &lt;fct&gt;
-## 1 26-30       30     3 26-30
-## 2 31-35       20     2 31-35
-## 3 36-40       30     3 36-40
-## 4 41-45       10     1 41-45
-## 5 46-50       10     1 46-50</code></pre>
-<div id="htmlwidget-fbc0ad7fa91421958c51" style="width:672px;height:480px;" class="plotly html-widget"></div>
-<script type="application/json" data-for="htmlwidget-fbc0ad7fa91421958c51">{"x":{"data":[{"orientation":"v","width":0.9,"base":0,"x":[1],"y":[30],"text":"percent: 30<br />number:  3","type":"bar","marker":{"autocolorscale":false,"color":"rgba(248,118,109,1)","line":{"width":1.88976377952756,"color":"transparent"}},"name":"26-30","legendgroup":"26-30","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":0.9,"base":0,"x":[2],"y":[20],"text":"percent: 20<br />number:  2","type":"bar","marker":{"autocolorscale":false,"color":"rgba(163,165,0,1)","line":{"width":1.88976377952756,"color":"transparent"}},"name":"31-35","legendgroup":"31-35","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":0.9,"base":0,"x":[3],"y":[30],"text":"percent: 30<br />number:  3","type":"bar","marker":{"autocolorscale":false,"color":"rgba(0,191,125,1)","line":{"width":1.88976377952756,"color":"transparent"}},"name":"36-40","legendgroup":"36-40","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":0.9,"base":0,"x":[4],"y":[10],"text":"percent: 10<br />number:  1","type":"bar","marker":{"autocolorscale":false,"color":"rgba(0,176,246,1)","line":{"width":1.88976377952756,"color":"transparent"}},"name":"41-45","legendgroup":"41-45","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":0.9,"base":0,"x":[5],"y":[10],"text":"percent: 10<br />number:  1","type":"bar","marker":{"autocolorscale":false,"color":"rgba(231,107,243,1)","line":{"width":1.88976377952756,"color":"transparent"}},"name":"46-50","legendgroup":"46-50","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"margin":{"t":26.2283105022831,"r":7.30593607305936,"b":40.1826484018265,"l":37.2602739726027},"plot_bgcolor":"rgba(255,255,255,1)","paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[0.4,5.6],"tickmode":"array","ticktext":["26-30","31-35","36-40","41-45","46-50"],"tickvals":[1,2,3,4,5],"categoryorder":"array","categoryarray":["26-30","31-35","36-40","41-45","46-50"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"y","title":{"text":"Age","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-1.5,31.5],"tickmode":"array","ticktext":["0","10","20","30"],"tickvals":[0,10,20,30],"categoryorder":"array","categoryarray":["0","10","20","30"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"x","title":{"text":"Percent","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187}},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":null,"line":{"color":null,"width":0,"linetype":[]},"yref":"paper","xref":"paper","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":false,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":1.88976377952756,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.689497716895}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","showSendToCloud":false},"source":"A","attrs":{"634824963e20":{"y":{},"x":{},"fill":{},"text":{},"type":"bar"}},"cur_data":"634824963e20","visdat":{"634824963e20":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
-</center>
+<pre><code>## # A tibble: 5 x 3
+##   X.1.What.Is.Your.Age.     n percent
+##   &lt;fct&gt;                 &lt;int&gt;   &lt;dbl&gt;
+## 1 26-30                     3      30
+## 2 31-35                     2      20
+## 3 36-40                     3      30
+## 4 41-45                     1      10
+## 5 46-50                     1      10</code></pre>
+<pre><code>## Saving 7 x 5 in image</code></pre>
+<p><img src="Plotting_file_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 </div>
 </div>
-<div id="column-1" class="section level2" data-width="350">
-<h2>Column</h2>
-<div id="chart-b" class="section level3">
-<h3>Chart B</h3>
-</div>
-<div id="chart-c" class="section level3">
-<h3>Chart C</h3>
-</div>
+<div id="a-function-to-create-barplots-arranged-in-ascending-order-of-bar-size" class="section level2">
+<h2>A function to create barplots, arranged in ascending order of bar size</h2>
+<p>
+Sometimes, like in the example above, the default order of labels along the x-axis works. Sometimes, however, you might want to arrange the bars in the plot in ascending order. The code here is very similar to that above, meaning that the function will create and save an image of the barplot automatically once the arguments in the function have been specified. As above, percentages are plotted along the y-axis. In this case, I want to the bars to be arranged from the lowest to the highest percentage in the plot.
+</p>
+<p>
+The code below contains a function to do just that:
+</p>
+<pre><code>plot_column_asc &lt;- function(data, column, legend.label = quo(column)){
+  data_name &lt;- deparse(substitute(data))
+  column &lt;- enquo(column)
+  data2 &lt;- data %&gt;% 
+    group_by(!!column) %&gt;% 
+    count() %&gt;% 
+    ungroup() %&gt;% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %&gt;%
+    mutate(!!column := as.factor(!!column)) %&gt;%
+    
+    
+    ##The line below arranges the column in ascending order for plotting purposes. 
+    mutate(!!column := forcats::fct_reorder(!!column, percent))
+  
+  print(data2)
+  
+  plot &lt;- ggplot(data2, aes(x = !!column, !!fill = column)) + geom_col(aes(y = percent)) + 
+    theme_classic() + theme(legend.position = &quot;none&quot;) + xlab(legend.label) + ylab(&quot;Percent&quot;) + 
+    geom_text(aes(label = paste0(percent, &quot;%&quot;), y = percent), vjust = -0.5) + scale_fill_grey()
+    ##scale_fill_grey() was added to turn this graph into greyscale. Delete it if you want it in colour. 
+  ggsave(paste0(data_name, legend.label, &quot;_bar_asc&quot;, &quot;.png&quot;, sep=&quot;&quot;), plot, device = &quot;png&quot;)
+  plot
+}</code></pre>
+<p>
+It’s largely similar to the code above. The chief exception is the line:
+</p>
+<pre><code>mutate(!!column := forcats::fct_reorder(!!column, percent))</code></pre>
+<p>
+This line requires that you have the forcats package installed. If you have tidyverse installed, then you should already have it. This package lets you work with factors. It is this line of code that sorts the bars in the barplot into ascending order.
+</p>
+<p>
+Let’s look at the code in action:
+</p>
+<p>
+First, copy and paste the code for the function into a script and run the code to create the function <em>plot_column_asc</em>.
+</p>
+<p>
+Next, call the function plot_column_asc. Specify the arguments: data, column and, optionally, legend.label.
+</p>
+<p>
+In this example, I will work with the fake_data dataframe created above. I want to plot the column ‘X.2.What.Is.Your.Occupation.’, with the bars displayed in ascending order. I also want the main label along the x-axis to be something that is much easier to read: ‘Occupation’. This is what the code looks like, as well as the resulting output:
+</p>
+<pre class="r"><code>plot_column_asc(fake_data, column=X.2.What.Is.Your.Occupation., legend.label = &quot;Occupation&quot;)</code></pre>
+<pre><code>## # A tibble: 5 x 3
+##   X.2.What.Is.Your.Occupation.     n percent
+##   &lt;fct&gt;                        &lt;int&gt;   &lt;dbl&gt;
+## 1 Accountant                       2      20
+## 2 Cleaner                          1      10
+## 3 Doctor                           2      20
+## 4 Magician                         4      40
+## 5 Swamp Monster                    1      10</code></pre>
+<pre><code>## Saving 7 x 5 in image</code></pre>
+<img src="Plotting_file_files/figure-html/unnamed-chunk-8-1.png" width="672" />
+<p>
+</p>
 </div>
 
 
