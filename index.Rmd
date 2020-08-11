@@ -1,7 +1,7 @@
 ---
 title: Welcome!
 output: html_document
-theme: cosmo
+theme: paper
 ---
 
 ```{r setup, include=FALSE}
@@ -21,4 +21,6 @@ h4 {background-color: #A52A2A;
 
 ## hεləʊ!
 <br>
-This site is currently under development.
+<p>My name is Scott Lewis and I am a PhD candidate at Queen Mary University of London. I study Linguistics, with a particular focus on acoustic and articulatory phonetics. My PhD work examines the speech of speakers from Liverpool and the Wirral in Merseyside, UK. I use acoustic information and articulatory data obtained through ultrasound tongue imaging to investigate differences between speakers from these locations.</p>
+
+<p>This site is currently under development, but my chief aim is to use it as a space to store annotated snippets of code that I have used for various projects. Chiefly this code exists for my own benefit, but if anybody ever happens to stumble upon these pages and find something useful, then that would be great.</p>

@@ -1,6 +1,9 @@
 ---
-title: Functions for plotting
-output: html_document
+title: Functions for plotting -- Barplots
+output: 
+  html_document:
+    toc: true
+    toc_float: true
 theme: paper
 ---
 
@@ -19,7 +22,7 @@ h4 {background-color: #A52A2A;
     padding: 12px}
 ```
 
-
+## A function to create and easily save barplots
 
 <p>The following function was designed to create barplots and save them automatically.</p>
 <p>It was developed for a project that required the creation of a large number of barplots, each of which needed the x-axis label to be changed. Having the function rapidly reduced the time needed to do this.</p>
@@ -29,7 +32,7 @@ h4 {background-color: #A52A2A;
 <ul><li>'data' is a dataframe.</li>
 <li>'column' is the name of any column in the dataframe.</li>
 <li>'legend.label' is an optional argument. If the user wants to rename the column for plotting purposes, they need to specify the name in quotation marks, writing, for example *legend.label = "New Name"*. If this is not done, then the column name from the dataframe will be used to label the x-axis title (with nothing being renamed). **In each case, the dataframe itself is not changed**. The function *only* creates a graph and does not alter the original data.</li>
-<p><strong>A quick note: dplyr and ggplot2 packages must be loaded for this function to work.</strong>The packages can be loaded by typing 
+<p><strong>A quick note: dplyr and ggplot2 packages must be loaded for this function to work.</strong>The packages can be loaded by typing:
 ```
 library(dplyr)
 library(ggplot2)
@@ -139,11 +142,11 @@ plot_column(fake_data, column = X.1.What.Is.Your.Age., legend.label = "Age")
 ```
 
 
-### Sorting a barplot in ascending order
+## A function to create barplots, arranged in ascending order of bar size
 
-<p>Sometimes, like in the example above, the default order of labels along the x-axis works. Sometimes, however, you might want to arrange the bars in the plot in ascending or descending order.</p>
+<p>Sometimes, like in the example above, the default order of labels along the x-axis works. Sometimes, however, you might want to arrange the bars in the plot in ascending order. The code here is very similar to that above, meaning that the function will create and save an image of the barplot automatically once the arguments in the function have been specified. As above, percentages are plotted along the y-axis. In this case, I want to the bars to be arranged from the lowest to the highest percentage in the plot.</p>
 
-<p>The code below contains a function to plot the bars in ascending percentage order:</p>
+<p>The code below contains a function to do just that:</p>
 ```
 plot_column_asc <- function(data, column, legend.label = quo(column)){
   data_name <- deparse(substitute(data))
@@ -175,9 +178,10 @@ mutate(!!column := forcats::fct_reorder(!!column, percent))
 ```
 <p>This line requires that you have the forcats package installed. If you have tidyverse installed, then you should already have it. This package lets you work with factors. It is this line of code that sorts the bars in the barplot into ascending order.</p>
 
-<p>Let's look at the code in action</p>
+<p>Let's look at the code in action:</p>
 <p>First, copy and paste the code for the function into a script and run the code to create the function *plot_column_asc*.</p>
-<p>Next, call the function plot_column_asc. Specify the arguments: data, column and, optionally, legend.label. <p>In this example, I will work with the fake_data dataframe created above. I want to plot the column 'X.2.What.Is.Your.Occupation.', with the bars displayed in ascending order. I also want the main label along the x-axis to be something that is much easier to read: 'Occupation'. This is what the code looks like, as well as the resulting output:</p>
+<p>Next, call the function plot_column_asc. Specify the arguments: data, column and, optionally, legend.label.</p>
+<p>In this example, I will work with the fake_data dataframe created above. I want to plot the column 'X.2.What.Is.Your.Occupation.', with the bars displayed in ascending order. I also want the main label along the x-axis to be something that is much easier to read: 'Occupation'. This is what the code looks like, as well as the resulting output:</p>
 
 ```{r echo=FALSE}
 plot_column_asc <- function(data, column, legend.label = quo(column)){

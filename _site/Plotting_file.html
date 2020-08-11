@@ -11,16 +11,19 @@
 
 
 
-<title>Functions for plotting</title>
+<title>Functions for plotting – Barplots</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<link href="site_libs/bootstrap-3.3.5/css/paper.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
-<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/ionicons-2.0.1/css/ionicons.min.css" rel="stylesheet" />
 
@@ -103,33 +106,33 @@ summary {
 <style type="text/css">
 /* padding for bootstrap navbar */
 body {
-  padding-top: 51px;
+  padding-top: 64px;
   padding-bottom: 40px;
 }
 /* offset scroll position for anchor links (for fixed navbar)  */
 .section h1 {
-  padding-top: 56px;
-  margin-top: -56px;
+  padding-top: 69px;
+  margin-top: -69px;
 }
 .section h2 {
-  padding-top: 56px;
-  margin-top: -56px;
+  padding-top: 69px;
+  margin-top: -69px;
 }
 .section h3 {
-  padding-top: 56px;
-  margin-top: -56px;
+  padding-top: 69px;
+  margin-top: -69px;
 }
 .section h4 {
-  padding-top: 56px;
-  margin-top: -56px;
+  padding-top: 69px;
+  margin-top: -69px;
 }
 .section h5 {
-  padding-top: 56px;
-  margin-top: -56px;
+  padding-top: 69px;
+  margin-top: -69px;
 }
 .section h6 {
-  padding-top: 56px;
-  margin-top: -56px;
+  padding-top: 69px;
+  margin-top: -69px;
 }
 .dropdown-submenu {
   position: relative;
@@ -249,6 +252,69 @@ $(document).ready(function () {
 
 
 
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
 
 </head>
 
@@ -256,6 +322,16 @@ $(document).ready(function () {
 
 
 <div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
 
 
 
@@ -300,11 +376,15 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Functions for plotting</h1>
+<h1 class="title toc-ignore">Functions for plotting – Barplots</h1>
 
 </div>
 
 
+<style type="text/css">
+toc {text-align: left;}
+
+</style>
 <style type="text/css">
 h1, h2, h3 {text-align: center;}
 h1  {color:#FFFAF0;
@@ -315,6 +395,8 @@ h4 {background-color: #A52A2A;
     color:#FFFAF0;
     padding: 12px}
 </style>
+<div id="a-function-to-create-and-easily-save-barplots" class="section level2">
+<h2>A function to create and easily save barplots</h2>
 <p>
 The following function was designed to create barplots and save them automatically.
 </p>
@@ -341,7 +423,7 @@ To that end, within the function, the user is asked to provide three arguments:
 ‘legend.label’ is an optional argument. If the user wants to rename the column for plotting purposes, they need to specify the name in quotation marks, writing, for example <em>legend.label = “New Name”</em>. If this is not done, then the column name from the dataframe will be used to label the x-axis title (with nothing being renamed). <strong>In each case, the dataframe itself is not changed</strong>. The function <em>only</em> creates a graph and does not alter the original data.
 </li>
 <p>
-<p><strong>A quick note: dplyr and ggplot2 packages must be loaded for this function to work.</strong>The packages can be loaded by typing</p>
+<p><strong>A quick note: dplyr and ggplot2 packages must be loaded for this function to work.</strong>The packages can be loaded by typing:</p>
 <pre><code>library(dplyr)
 library(ggplot2)</code></pre>
 </p>
@@ -424,15 +506,16 @@ The results of doing so are plotted below:
 ## 4 41-45                     1      10
 ## 5 46-50                     1      10</code></pre>
 <pre><code>## Saving 7 x 5 in image</code></pre>
-<p><img src="Plotting_file_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p><img src="Plotting_file_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 </div>
-<div id="sorting-a-barplot-in-ascending-order" class="section level3">
-<h3>Sorting a barplot in ascending order</h3>
+</div>
+<div id="a-function-to-create-barplots-arranged-in-ascending-order-of-bar-size" class="section level2">
+<h2>A function to create barplots, arranged in ascending order of bar size</h2>
 <p>
-Sometimes, like in the example above, the default order of labels along the x-axis works. Sometimes, however, you might want to arrange the bars in the plot in ascending or descending order.
+Sometimes, like in the example above, the default order of labels along the x-axis works. Sometimes, however, you might want to arrange the bars in the plot in ascending order. The code here is very similar to that above, meaning that the function will create and save an image of the barplot automatically once the arguments in the function have been specified. As above, percentages are plotted along the y-axis. In this case, I want to the bars to be arranged from the lowest to the highest percentage in the plot.
 </p>
 <p>
-The code below contains a function to plot the bars in ascending percentage order:
+The code below contains a function to do just that:
 </p>
 <pre><code>plot_column_asc &lt;- function(data, column, legend.label = quo(column)){
   data_name &lt;- deparse(substitute(data))
@@ -465,13 +548,14 @@ It’s largely similar to the code above. The chief exception is the line:
 This line requires that you have the forcats package installed. If you have tidyverse installed, then you should already have it. This package lets you work with factors. It is this line of code that sorts the bars in the barplot into ascending order.
 </p>
 <p>
-Let’s look at the code in action
+Let’s look at the code in action:
 </p>
 <p>
 First, copy and paste the code for the function into a script and run the code to create the function <em>plot_column_asc</em>.
 </p>
 <p>
 Next, call the function plot_column_asc. Specify the arguments: data, column and, optionally, legend.label.
+</p>
 <p>
 In this example, I will work with the fake_data dataframe created above. I want to plot the column ‘X.2.What.Is.Your.Occupation.’, with the bars displayed in ascending order. I also want the main label along the x-axis to be something that is much easier to read: ‘Occupation’. This is what the code looks like, as well as the resulting output:
 </p>
@@ -485,13 +569,15 @@ In this example, I will work with the fake_data dataframe created above. I want 
 ## 4 Magician                         4      40
 ## 5 Swamp Monster                    1      10</code></pre>
 <pre><code>## Saving 7 x 5 in image</code></pre>
-<img src="Plotting_file_files/figure-html/unnamed-chunk-8-1.png" width="672" />
+<img src="Plotting_file_files/figure-html/unnamed-chunk-9-1.png" width="672" />
 <p>
 </p>
 </div>
 
 
 
+</div>
+</div>
 
 </div>
 
@@ -524,6 +610,32 @@ $(document).ready(function () {
 
 <!-- code folding -->
 
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

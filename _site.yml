@@ -11,7 +11,10 @@ navbar:
       menu:
         - text: "Barplots"
           href: Plotting_file.html
-
+output:
+  html_document:
+    theme: paper
+    highlight: textmate
 
 
 
