@@ -11,6 +11,8 @@ navbar:
       menu:
         - text: "Barplots"
           href: Plotting_file.html
+        - text: "Barplot using ggplotly"
+          href: Plot_plotly.html
 output:
   html_document:
     theme: paper
