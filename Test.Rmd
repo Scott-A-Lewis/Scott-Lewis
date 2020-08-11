@@ -1,0 +1,84 @@
+---
+title: "Untitled"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+```
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r echo=TRUE}
+fake_data <- data.frame("X.1.What.Is.Your.Age?" = c("26-30", "26-30", "26-30", "31-35", "31-35", "36-40", "36-40", "36-40", "41-45", "46-50"), "X.2.What.Is.Your.Occupation?" = c("Magician", "Swamp Monster", "Magician", "Magician", "Doctor", "Doctor", "Accountant", "Accountant", "Magician", "Cleaner"))  
+```
+```{r}
+print(fake_data)
+```
+```{r echo=FALSE, message=FALSE}
+library(ggplot2)
+library(dplyr)
+library(forcats)
+library(ellipsis)
+library(plotly)
+```
+```{r echo=FALSE, warning=FALSE}
+plot_column <- function(data, column, legend.label = quo(column)){
+  ###This function requires the following packages: dplyr and ggplot2.
+  
+  ##deparse(substitute(data)) is used to convert the name of the data into a string
+  ##This helps construct the filename to save the image later.
+  data_name <- deparse(substitute(data))
+  
+  ## enquo captures expressions that you supply, in this case the column name.
+  column <- enquo(column)
+  
+  ##dplyr is used to find percentages to plot on the y-axis 
+  data2 <- data %>% 
+    ##!! unquotes
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %>%
+    mutate(column := as.factor(!!column)) %>% 
+    select(column, percent, `n`) %>% 
+    mutate(!!legend.label := column) %>% 
+  
+    
+  print(data2)
+  ##Prints the updated data, including count and percentage
+  
+  ##Plotting is done with the code below
+  plot_nm <- ggplot(data2, aes(x = column, fill = column,  text = paste("number: ", `n`))) + geom_col(aes(y = percent)) + 
+    theme_classic() + theme(legend.position = "none") + xlab(legend.label) + ylab("Percent")
+  ggplotly(plot_nm, tooltip = c("percent", "text")) 
+}
+```
+<center>
+```{r, warning=FALSE}
+plot_column(fake_data, column = X.1.What.Is.Your.Age., legend.label = "Age")
+```
+</center>
+
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Chart B
+
+```{r}
+
+```
+
+### Chart C
+
+```{r}
+
+```
+
