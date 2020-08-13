@@ -1,0 +1,2 @@
+"0","#p1 <- plot_column(fake_data, column = X.1.What.Is.Your.Age., legend.label = ""Age"", groupname = NA)"
+"0","p2 <- plot_column(fake_data, column = X.2.What.Is.Your.Occupation., legend.label = ""Occupation"", groupname = X.1.What.Is.Your.Age.)"

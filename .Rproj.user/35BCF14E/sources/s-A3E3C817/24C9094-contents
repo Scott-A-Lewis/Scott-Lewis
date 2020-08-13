@@ -6,6 +6,18 @@ output:
     toc_float: true
 ---
 
+
+```{css, echo = FALSE}
+h1, h2, h3, h4 {text-align: center;}
+h1  {color:#FFFAF0;
+    background-color: #708090; 
+    padding: 20px;
+    font-weight:bold;}
+h4 {background-color: #A52A2A;
+    color:#FFFAF0;
+    padding: 12px}
+```
+
 ## Barplot using ggplotly
 
 <p>The following function was designed to create barplots that can be dynamically displayed on a webpage.

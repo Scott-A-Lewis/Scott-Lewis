@@ -13,12 +13,12 @@ navbar:
           href: Plotting_file.html
         - text: "Barplot using ggplotly"
           href: Plot_plotly.html
+        - text: "Plotting subsetted data"
+          href: Plotly_subset.html
 output:
   html_document:
     theme: paper
     highlight: textmate
-
-
 
 #To add image instead of name for title, eg.
 #title: "<img id=\"logo\" style=\"width: 30px;\" src=\"dog.gif\" />"

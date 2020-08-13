@@ -1,0 +1,177 @@
+---
+title: "Example plots"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{css, echo = FALSE}
+h1, h2, h3, h4 {text-align: center;}
+h1  {color:#FFFAF0;
+    background-color: #708090; 
+    padding: 20px;
+    font-weight:bold;}
+h4 {background-color: #A52A2A;
+    color:#FFFAF0;
+    padding: 12px}
+```
+
+## This is the kind of thing that can be plotted on a webpage
+Dropdown menus can let the reader look at columns of interest. Instead of plotting multiple charts, they can look at the charts that interest them.
+<p>
+**Below is some fake_data used to generate the plot**
+</p>
+<p>
+This plot looks at the percenatage of 'participants' that hold different occupations. Hovering over the columns in the plot tells you more information. The dropdown menu splits this information according to age. </p> 
+
+
+
+```{r echo=TRUE}
+fake_data <- data.frame("X.1.What.Is.Your.Age?" = c("26-30", "26-30", "26-30", "31-35", "31-35", "36-40", "36-40", "36-40", "41-45", "46-50"), "X.2.What.Is.Your.Occupation?" = c("Magician", "Swamp Monster", "Magician", "Magician", "Doctor", "Doctor", "Accountant", "Accountant", "Magician", "Cleaner"))  
+```
+```{r echo=TRUE}
+print(fake_data)
+```
+```{r echo=FALSE, message=FALSE}
+library(ggplot2)
+library(dplyr)
+library(ellipsis)
+library(plotly)
+library(gridExtra)
+```
+
+<center>
+
+```{r echo=FALSE, warning=FALSE}
+plot_column <- function(data, column, legend.label = quo(column), groupname){
+  ###This function requires the following packages: dplyr, ggplot2 and plotly.
+  
+  ## enquo captures expressions that you supply, in this case the column name.
+  column <- enquo(column)
+  groupname <- enquo(groupname)
+#  groupName <- deparse(substitute(groupname))
+
+#  if(groupname != ""){
+#    enquo(groupname)
+#    mutate(data, groupname := as.factor(!!groupname))
+#    groupname <- enquo(!!groupname)
+    data2 <- data %>% 
+    ##!! unquotes
+    group_by(!!column, !!groupname) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %>%
+    mutate(column := as.factor(!!column)) %>% 
+    mutate(groupname := as.factor(!!groupname)) %>% 
+    select(column, percent, `n`, groupname)
+    
+
+  ##The plot is created with the code below
+  ##text = paste() lets you add more information to the plot. In this case I want to add the number of participants who provided a particular response (`n`).
+#  plot_nm <- ggplot(data2, aes(x = column, fill = column,  text = paste("number: ", `n`))) + geom_col(aes(y #= percent)) + 
+#    theme_classic() + theme(legend.position = "none") + xlab(legend.label) + ylab("Percent") +   #ggtitle(legend.label) + theme(plot.title = element_text(hjust = 0.5))
+#  
+   p <- plot_ly(data = data2, x = ~column, y=~percent, type = "bar", visible = T, showlegend = FALSE, hoverinfo = "text", text = ~paste("Age:", groupname, "</br></br></br>", column, "</br></br>", percent, "%"), xaxis = list(title = "Occupation"), yaxis = list(title = "Percent")) %>% layout(xaxis = list(title = "Occupation"), yaxis=list(title = "Percent")) %>% 
+     add_trace(data = subset(data2, groupname == "26-30"), visible = F, hoverinfo = "text", text = ~paste("Age: 26-30", "</br></br></br>", column, "</br></br>", percent, "%")) %>%      
+     add_trace(data = subset(data2, groupname == "31-35"), visible = F, hoverinfo = "text", text = ~paste("Age: 26-30", "</br></br></br>", column, "</br></br>", percent, "%")) %>%      
+     add_trace(data = subset(data2, groupname == "36-40"), visible = F, hoverinfo = "text", text = ~paste("Age: 26-30", "</br></br></br>", column, "</br></br>", percent, "%")) %>%      
+     add_trace(data = subset(data2, groupname == "41-45"), visible = F, hoverinfo = "text", text = ~paste("Age: 26-30", "</br></br></br>", column, "</br></br>", percent, "%")) %>%      
+     add_trace(data = subset(data2, groupname == "46-50"), visible = F, hoverinfo = "text", text = ~paste("Age: 26-30", "</br></br></br>", column, "</br></br>", percent, "%")) %>% 
+  
+#   ggplotly(plot_nm, tooltip = c("percent", "text"), transforms = 
+#              list(
+#                list(type = "filter",
+#                     target = ~groupname,
+#                     operation = "=",
+#                     value = unique(data2$groupname)[1])
+#              )) %>% 
+    layout(
+    updatemenus = list(
+      list(
+        type = 'dropdown',
+        active = 0,
+        buttons = list(
+#          list(method = "restyle",
+#               args = list("transforms[0].value", unique(data2$groupname)[1]),
+#               label = unique(data2$groupname)[1]),
+#          list(method = "restyle",
+#               args = list("transforms[0].value", unique(data2$groupname)[2]),
+#               label = unique(data2$groupname)[2]),
+#          list(method = "restyle",
+#               args = list("transforms[0].value", unique(data2$groupname)[3]),
+#               label = unique(data2$groupname)[3])))))
+          list(method = "restyle",
+               args = list("visible", list(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE)),
+               label = "All"),
+          list(method = "restyle",
+               args = list("visible", list(FALSE, TRUE, FALSE, FALSE, FALSE, FALSE)),
+               label = "26-30"),
+          list(method = "restyle",
+               args = list("visible", list(FALSE, FALSE, TRUE, FALSE, FALSE, FALSE)),
+               label = "31-35"),
+          list(method = "restyle",
+               args = list("visible", list(FALSE, FALSE, FALSE, TRUE, FALSE, FALSE)),
+               label = "36-40"),
+          list(method = "restyle",
+               args = list("visible", list(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE)),
+               label = "41-45"),
+          list(method = "restyle",
+               args = list("visible", list(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE)),
+               label = "46-50")))))
+   p
+#}
+
+}
+```
+```{r echo=FALSE}
+#p1 <- plot_column(fake_data, column = X.1.What.Is.Your.Age., legend.label = "Age", groupname = NA)
+p2 <- plot_column(fake_data, column = X.2.What.Is.Your.Occupation., legend.label = "Occupation", groupname = X.1.What.Is.Your.Age.)
+p2
+#p1 <- p1 %>% add_trace(visible = T, name = "p1")
+#p2 <- p2 %>% add_trace(visible = T, name = "p2") %>% 
+#    layout(
+#    updatemenus = list(
+#      list(
+#        type = 'dropdown',
+#        active = 0,
+#        buttons = list(
+#          list(method = "restyle",
+#               args = list("transforms[0].value", unique(p2$X.1.What.Is.Your.Age.)[1]),
+#               label = unique(p2$X.1.What.Is.Your.Age.)[1]),
+#          list(method = "restyle",
+#               args = list("transforms[0].value", unique(p2$X.1.What.Is.Your.Age.)[2]),
+#               label = unique(p2$X.1.What.Is.Your.Age.)[2]),
+#          list(method = "restyle",
+#               args = list("transforms[0].value", unique(p2$X.1.What.Is.Your.Age.)[3]),
+#               label = unique(p2$X.1.What.Is.Your.Age.)[3])))))
+
+#p2
+
+
+#p3 <- p1 %>% layout(updatemenu = list
+#              (type = "dropdown",
+#                active = 0,
+#                buttons = list(
+#                list(method = "restyle",
+#                args = list("visible", list(TRUE, FALSE, FALSE)))
+#                )))
+
+#p2 <- p2 %>% add_trace(visible = F)
+
+#p3 <- p1 %>% add_trace(p2, visible = F, name = "p2") %>% 
+#  layout(yaxis = list(title = "y"),
+#  updatemenus = list(
+#    y=0.7,
+#    buttons = list(
+#      list(method = "restyle",
+#          args = list("p2", list(TRUE, FALSE, FALSE)),
+#               label = "p2")))
+#  )
+# p3
+#p3
+```
+</center>
