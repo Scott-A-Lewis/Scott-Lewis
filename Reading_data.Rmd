@@ -4,7 +4,6 @@ output:
   html_document:
     toc: true
     toc_float: true
-
 ---
 
 
@@ -94,7 +93,7 @@ To use this function, put the name of the file that you want to open inside the 
 You can assign a name to the file that you are reading in by typing `<-`.  
 
 For example typing
-```{r utils}
+```{r}
 file <- read.csv("animaldata.csv")
 ```
 
