@@ -11,7 +11,7 @@
 
 
 
-<title>Example plots</title>
+<title>Plotting a barplot using ggplotly (plotly library)</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19,6 +19,9 @@
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
@@ -256,6 +259,69 @@ $(document).ready(function () {
 
 
 
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
 
 </head>
 
@@ -263,6 +329,16 @@ $(document).ready(function () {
 
 
 <div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
 
 
 
@@ -316,7 +392,7 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Example plots</h1>
+<h1 class="title toc-ignore">Plotting a barplot using ggplotly (plotly library)</h1>
 
 </div>
 
@@ -331,14 +407,13 @@ h4 {background-color: #A52A2A;
     color:#FFFAF0;
     padding: 12px}
 </style>
-<div id="this-is-the-kind-of-thing-that-can-be-plotted-on-a-webpage" class="section level2">
-<h2>This is the kind of thing that can be plotted on a webpage</h2>
-Dropdown menus can let the reader look at columns of interest. Instead of plotting multiple charts, they can look at the charts that interest them.
+<div id="barplot-using-ggplotly" class="section level2">
+<h2>Barplot using ggplotly</h2>
 <p>
-<strong>Below is some fake_data used to generate the plot</strong>
+The following function was designed to create barplots that can be dynamically displayed on a webpage. The code is largely similar to that discussed <a href="Plotting_file.html">here</a> and has a similar purpose, so I won’t discuss it again here. In this case, however, no image is saved, as the code is designed to display the barplot on a webpage.
 </p>
 <p>
-This plot looks at the percenatage of ‘participants’ that hold different occupations. Hovering over the columns in the plot tells you more information. The dropdown menu splits this information according to age.
+As in the link above, I’m going to work with the fake_data dataframe and, again, I’m just going to look at the column for Age.
 </p>
 <pre class="r"><code>fake_data &lt;- data.frame(&quot;X.1.What.Is.Your.Age?&quot; = c(&quot;26-30&quot;, &quot;26-30&quot;, &quot;26-30&quot;, &quot;31-35&quot;, &quot;31-35&quot;, &quot;36-40&quot;, &quot;36-40&quot;, &quot;36-40&quot;, &quot;41-45&quot;, &quot;46-50&quot;), &quot;X.2.What.Is.Your.Occupation?&quot; = c(&quot;Magician&quot;, &quot;Swamp Monster&quot;, &quot;Magician&quot;, &quot;Magician&quot;, &quot;Doctor&quot;, &quot;Doctor&quot;, &quot;Accountant&quot;, &quot;Accountant&quot;, &quot;Magician&quot;, &quot;Cleaner&quot;))  </code></pre>
 <pre class="r"><code>print(fake_data)</code></pre>
@@ -353,14 +428,56 @@ This plot looks at the percenatage of ‘participants’ that hold different occ
 ## 8                  36-40                   Accountant
 ## 9                  41-45                     Magician
 ## 10                 46-50                      Cleaner</code></pre>
+<pre class="r"><code>library(ggplot2)
+library(dplyr)
+library(ellipsis)
+library(plotly)</code></pre>
+<pre class="r"><code>plot_column &lt;- function(data, column, legend.label = quo(column)){
+  ###This function requires the following packages: dplyr, ggplot2 and plotly.
+  
+  ## enquo captures expressions that you supply, in this case the column name.
+  column &lt;- enquo(column)
+  
+  ##dplyr is used to find percentages to plot on the y-axis 
+  data2 &lt;- data %&gt;% 
+    ##!! unquotes
+    group_by(!!column) %&gt;% 
+    count() %&gt;% 
+    ungroup() %&gt;% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %&gt;%
+    mutate(column := as.factor(!!column)) %&gt;% 
+    select(column, percent, `n`) %&gt;% 
+    
+  ##Prints the updated data, including count and percentage
+  print(data2)
+  
+  ##The plot is created with the code below
+  ##text = paste() lets you add more information to the plot. In this case I want to add the number of participants who provided a particular response (`n`).
+  plot_nm &lt;- ggplot(data2, aes(x = column, fill = column,  text = paste(&quot;number: &quot;, `n`))) + geom_col(aes(y = percent)) + 
+    theme_classic() + theme(legend.position = &quot;none&quot;) + xlab(legend.label) + ylab(&quot;Percent&quot;)
+  
+  #Finally, the line below call ggplotly to produce the barplot
+  ggplotly(plot_nm, tooltip = c(&quot;percent&quot;, &quot;text&quot;)) 
+}</code></pre>
 <center>
-<div id="htmlwidget-91fbc2f0bb6df846b979" style="width:672px;height:480px;" class="plotly html-widget"></div>
-<script type="application/json" data-for="htmlwidget-91fbc2f0bb6df846b979">{"x":{"visdat":{"3f686b463c2e":["function () ","plotlyVisDat"],"3f684f8e76d5":["function () ","data"],"3f686d574163":["function () ","data"],"3f684d5a44d0":["function () ","data"],"3f683777640c":["function () ","data"],"3f6817173d60":["function () ","data"]},"cur_data":"3f6817173d60","attrs":{"3f686b463c2e":{"x":{},"y":{},"visible":true,"showlegend":false,"hoverinfo":"text","text":{},"xaxis":{"title":"Occupation"},"yaxis":{"title":"Percent"},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar"},"3f684f8e76d5":{"x":{},"y":{},"visible":false,"showlegend":false,"hoverinfo":"text","text":{},"xaxis":{"title":"Occupation"},"yaxis":{"title":"Percent"},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar","inherit":true},"3f686d574163":{"x":{},"y":{},"visible":false,"showlegend":false,"hoverinfo":"text","text":{},"xaxis":{"title":"Occupation"},"yaxis":{"title":"Percent"},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar","inherit":true},"3f684d5a44d0":{"x":{},"y":{},"visible":false,"showlegend":false,"hoverinfo":"text","text":{},"xaxis":{"title":"Occupation"},"yaxis":{"title":"Percent"},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar","inherit":true},"3f683777640c":{"x":{},"y":{},"visible":false,"showlegend":false,"hoverinfo":"text","text":{},"xaxis":{"title":"Occupation"},"yaxis":{"title":"Percent"},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar","inherit":true},"3f6817173d60":{"x":{},"y":{},"visible":false,"showlegend":false,"hoverinfo":"text","text":{},"xaxis":{"title":"Occupation"},"yaxis":{"title":"Percent"},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar","inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"xaxis":{"domain":[0,1],"automargin":true,"title":"Occupation"},"yaxis":{"domain":[0,1],"automargin":true,"title":"Percent"},"updatemenus":[{"type":"dropdown","active":0,"buttons":[{"method":"restyle","args":["visible",[true,false,false,false,false,false]],"label":"All"},{"method":"restyle","args":["visible",[false,true,false,false,false,false]],"label":"26-30"},{"method":"restyle","args":["visible",[false,false,true,false,false,false]],"label":"31-35"},{"method":"restyle","args":["visible",[false,false,false,true,false,false]],"label":"36-40"},{"method":"restyle","args":["visible",[false,false,false,false,true,false]],"label":"41-45"},{"method":"restyle","args":["visible",[false,false,false,false,false,true]],"label":"46-50"}]}],"hovermode":"closest","showlegend":false},"source":"A","config":{"showSendToCloud":false},"data":[{"x":["Accountant","Cleaner","Doctor","Doctor","Magician","Magician","Magician","Swamp Monster"],"y":[20,10,10,10,20,10,10,10],"visible":true,"showlegend":false,"hoverinfo":["text","text","text","text","text","text","text","text"],"text":["Age: 36-40 <\/br><\/br><\/br> Accountant <\/br><\/br> 20 %","Age: 46-50 <\/br><\/br><\/br> Cleaner <\/br><\/br> 10 %","Age: 31-35 <\/br><\/br><\/br> Doctor <\/br><\/br> 10 %","Age: 36-40 <\/br><\/br><\/br> Doctor <\/br><\/br> 10 %","Age: 26-30 <\/br><\/br><\/br> Magician <\/br><\/br> 20 %","Age: 31-35 <\/br><\/br><\/br> Magician <\/br><\/br> 10 %","Age: 41-45 <\/br><\/br><\/br> Magician <\/br><\/br> 10 %","Age: 26-30 <\/br><\/br><\/br> Swamp Monster <\/br><\/br> 10 %"],"xaxis":"Occupation","yaxis":"Percent","type":"bar","marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"frame":null},{"x":["Magician","Swamp Monster"],"y":[20,10],"visible":false,"showlegend":false,"hoverinfo":["text","text"],"text":["Age: 26-30 <\/br><\/br><\/br> Magician <\/br><\/br> 20 %","Age: 26-30 <\/br><\/br><\/br> Swamp Monster <\/br><\/br> 10 %"],"xaxis":"Occupation","yaxis":"Percent","type":"bar","marker":{"color":"rgba(255,127,14,1)","line":{"color":"rgba(255,127,14,1)"}},"error_y":{"color":"rgba(255,127,14,1)"},"error_x":{"color":"rgba(255,127,14,1)"},"frame":null},{"x":["Doctor","Magician"],"y":[10,10],"visible":false,"showlegend":false,"hoverinfo":["text","text"],"text":["Age: 26-30 <\/br><\/br><\/br> Doctor <\/br><\/br> 10 %","Age: 26-30 <\/br><\/br><\/br> Magician <\/br><\/br> 10 %"],"xaxis":"Occupation","yaxis":"Percent","type":"bar","marker":{"color":"rgba(44,160,44,1)","line":{"color":"rgba(44,160,44,1)"}},"error_y":{"color":"rgba(44,160,44,1)"},"error_x":{"color":"rgba(44,160,44,1)"},"frame":null},{"x":["Accountant","Doctor"],"y":[20,10],"visible":false,"showlegend":false,"hoverinfo":["text","text"],"text":["Age: 26-30 <\/br><\/br><\/br> Accountant <\/br><\/br> 20 %","Age: 26-30 <\/br><\/br><\/br> Doctor <\/br><\/br> 10 %"],"xaxis":"Occupation","yaxis":"Percent","type":"bar","marker":{"color":"rgba(214,39,40,1)","line":{"color":"rgba(214,39,40,1)"}},"error_y":{"color":"rgba(214,39,40,1)"},"error_x":{"color":"rgba(214,39,40,1)"},"frame":null},{"x":["Magician"],"y":[10],"visible":false,"showlegend":false,"hoverinfo":"text","text":"Age: 26-30 <\/br><\/br><\/br> Magician <\/br><\/br> 10 %","xaxis":"Occupation","yaxis":"Percent","type":"bar","marker":{"color":"rgba(148,103,189,1)","line":{"color":"rgba(148,103,189,1)"}},"error_y":{"color":"rgba(148,103,189,1)"},"error_x":{"color":"rgba(148,103,189,1)"},"frame":null},{"x":["Cleaner"],"y":[10],"visible":false,"showlegend":false,"hoverinfo":"text","text":"Age: 26-30 <\/br><\/br><\/br> Cleaner <\/br><\/br> 10 %","xaxis":"Occupation","yaxis":"Percent","type":"bar","marker":{"color":"rgba(140,86,75,1)","line":{"color":"rgba(140,86,75,1)"}},"error_y":{"color":"rgba(140,86,75,1)"},"error_x":{"color":"rgba(140,86,75,1)"},"frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<pre class="r"><code>plot_column(fake_data, column = X.1.What.Is.Your.Age., legend.label = &quot;Age&quot;)</code></pre>
+<pre><code>## # A tibble: 5 x 3
+##   column percent     n
+##   &lt;fct&gt;    &lt;dbl&gt; &lt;int&gt;
+## 1 26-30       30     3
+## 2 31-35       20     2
+## 3 36-40       30     3
+## 4 41-45       10     1
+## 5 46-50       10     1</code></pre>
+<div id="htmlwidget-994fd0cd9254cf808ebf" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-994fd0cd9254cf808ebf">{"x":{"data":[{"orientation":"v","width":0.9,"base":0,"x":[1],"y":[30],"text":"percent: 30<br />number:  3","type":"bar","marker":{"autocolorscale":false,"color":"rgba(248,118,109,1)","line":{"width":1.88976377952756,"color":"transparent"}},"name":"26-30","legendgroup":"26-30","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":0.9,"base":0,"x":[2],"y":[20],"text":"percent: 20<br />number:  2","type":"bar","marker":{"autocolorscale":false,"color":"rgba(163,165,0,1)","line":{"width":1.88976377952756,"color":"transparent"}},"name":"31-35","legendgroup":"31-35","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":0.9,"base":0,"x":[3],"y":[30],"text":"percent: 30<br />number:  3","type":"bar","marker":{"autocolorscale":false,"color":"rgba(0,191,125,1)","line":{"width":1.88976377952756,"color":"transparent"}},"name":"36-40","legendgroup":"36-40","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":0.9,"base":0,"x":[4],"y":[10],"text":"percent: 10<br />number:  1","type":"bar","marker":{"autocolorscale":false,"color":"rgba(0,176,246,1)","line":{"width":1.88976377952756,"color":"transparent"}},"name":"41-45","legendgroup":"41-45","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"orientation":"v","width":0.9,"base":0,"x":[5],"y":[10],"text":"percent: 10<br />number:  1","type":"bar","marker":{"autocolorscale":false,"color":"rgba(231,107,243,1)","line":{"width":1.88976377952756,"color":"transparent"}},"name":"46-50","legendgroup":"46-50","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"margin":{"t":26.2283105022831,"r":7.30593607305936,"b":40.1826484018265,"l":37.2602739726027},"plot_bgcolor":"rgba(255,255,255,1)","paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[0.4,5.6],"tickmode":"array","ticktext":["26-30","31-35","36-40","41-45","46-50"],"tickvals":[1,2,3,4,5],"categoryorder":"array","categoryarray":["26-30","31-35","36-40","41-45","46-50"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"y","title":{"text":"Age","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-1.5,31.5],"tickmode":"array","ticktext":["0","10","20","30"],"tickvals":[0,10,20,30],"categoryorder":"array","categoryarray":["0","10","20","30"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.65296803652968,"tickwidth":0.66417600664176,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"x","title":{"text":"Percent","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187}},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":null,"line":{"color":null,"width":0,"linetype":[]},"yref":"paper","xref":"paper","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":false,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":1.88976377952756,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.689497716895}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","showSendToCloud":false},"source":"A","attrs":{"3f6825f13f74":{"y":{},"x":{},"fill":{},"text":{},"type":"bar"}},"cur_data":"3f6825f13f74","visdat":{"3f6825f13f74":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
 </center>
 </div>
 
 
 
+</div>
+</div>
 
 </div>
 
@@ -393,6 +510,32 @@ $(document).ready(function () {
 
 <!-- code folding -->
 
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
