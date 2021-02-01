@@ -1,0 +1,6 @@
+Animal,Name,Age,Anger
+Tiger,Tony,60,3
+Giraffe,Gerald,10,1
+Mouse,Miles,4,10
+Crocodile,Kenneth,3,8
+Elephant,Dumbo,3,3
