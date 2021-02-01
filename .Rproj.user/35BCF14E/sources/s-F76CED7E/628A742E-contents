@@ -9,7 +9,6 @@ navbar:
     - text: "Reading data"
       href: Reading_data.html
     - text: "Plotting"
-      icon: ion-icon name="cellular-outline"
       menu:
         - text: "Barplots"
           href: Plotting_file.html
