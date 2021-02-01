@@ -1,0 +1,592 @@
+library(dplyr)
+library(ggplot2)
+library(ggrepel)
+
+Thoughts.on.raising.children.with.more.than.one.language <- read.csv("C:/Users/2011s/Desktop/Esther data - Bilingual Children/Thoughts on raising children with more than one language.csv")
+multilangdata <- Thoughts.on.raising.children.with.more.than.one.language
+multilangdata$kidnum <- multilangdata$X10a..How.many.children.do.you.have..if.at.all.
+multilangdata$kidnum <- droplevels(multilangdata$kidnum)
+
+########################Only interested in parents#####################################
+multilangparents <- subset(multilangdata, kidnum != "None")
+multilangparents <- subset(multilangdata, kidnum == "1" | kidnum == "2" | kidnum == "3" | kidnum == "4" | kidnum == "5" | kidnum == "6" | kidnum == "7")
+View(multilangparents)
+
+###Non-Germans living in Germany who don't have English as first language. NonGermMulti
+###Discrepency between my numbers and Esther's could be because 2 Austrians don't show up as German by these subsetting terms
+
+NonGermMulti <- subset(multilangparents, X6..Where.were.you.born. != "Germany" & X8..Where.do.you.currently.live. == "Germany" & multilangparents$X12a..Which.language.do.you.consider.to.be.your.first.language. != "English")
+nrow(NonGermMulti)
+View(NonGermMulti)
+
+###Non-Germans living in Germany who have English as an L1. NonGermAnglo
+
+NonGermAnglo <- subset(multilangparents, X6..Where.were.you.born. != "Germany" & X8..Where.do.you.currently.live. == "Germany" & multilangparents$X12a..Which.language.do.you.consider.to.be.your.first.language. == "English")
+nrow(NonGermAnglo)
+
+###Germans living in Germany who have German as an L1. German
+
+German <-  subset(multilangparents, X6..Where.were.you.born. == "Germany" & X8..Where.do.you.currently.live. == "Germany" & multilangparents$X12a..Which.language.do.you.consider.to.be.your.first.language. == "German")
+nrow(German)
+
+###Live in an Anglophone country (Canada, Australia, US, UK) consider English native language. English
+### This was 129 before I removed those that weren't born in Anglophone countries)
+English <- subset(multilangparents, (X6..Where.were.you.born. == "Canada" | X6..Where.were.you.born. == "Australia" | X6..Where.were.you.born. == "United Kingdom (UK)"  | X6..Where.were.you.born. == "United States of America (USA)") &  (X8..Where.do.you.currently.live. == "Canada" | X8..Where.do.you.currently.live. == "Australia" | X8..Where.do.you.currently.live. == "United States of America (USA)"| X8..Where.do.you.currently.live. == "United Kingdom (UK)") & multilangparents$X12a..Which.language.do.you.consider.to.be.your.first.language. == "English")
+nrow(English)
+View(English)
+
+
+###Live in Anglophone country but don't consider English to be L1. EnglishMulti
+EnglishMulti <- subset(multilangparents, (X8..Where.do.you.currently.live. == "Canada" | X8..Where.do.you.currently.live. == "Australia" | X8..Where.do.you.currently.live. == "United States of America (USA)"| X8..Where.do.you.currently.live. == "United Kingdom (UK)") & multilangparents$X12a..Which.language.do.you.consider.to.be.your.first.language. != "English")
+nrow(EnglishMulti)
+View(EnglishMulti)
+
+EnglishMulti$X2..What.is.your.gender.
+
+
+
+#### Remove Swiss and Austrians
+multilangparents<- subset(multilangparents, X6..Where.were.you.born. != "Austria" & X6..Where.were.you.born. != "Switzerland")
+multilangparents$group <- NA
+str(multilangparents$group)
+
+View(multilangparents)
+
+#write.csv(multilangparents, "C:/Users/2011s/Desktop/Esther data - Bilingual Children/Esther_data_children/multilangparents.csv")
+
+for (i in 1:nrow(multilangparents)){
+  if(multilangparents[i, "X6..Where.were.you.born."] != "Germany" & multilangparents[i, "X8..Where.do.you.currently.live."] == "Germany" & multilangparents[i, "X12a..Which.language.do.you.consider.to.be.your.first.language."] != "English"){
+    multilangparents[i, "group"] <- "NonGermMulti"
+  }
+  else if(multilangparents[i, "X6..Where.were.you.born."] != "Germany" & multilangparents[i, "X8..Where.do.you.currently.live."] == "Germany" & multilangparents[i, "X12a..Which.language.do.you.consider.to.be.your.first.language."] == "English"){
+    multilangparents[i, "group"] <- "NonGermAnglo"
+  }
+  else if(multilangparents[i, "X6..Where.were.you.born."] == "Germany" & multilangparents[i, "X8..Where.do.you.currently.live."] == "Germany" & multilangparents[i, "X12a..Which.language.do.you.consider.to.be.your.first.language."] == "German"){
+    multilangparents[i, "group"] <- "German"
+  }
+  else if((multilangparents[i, "X6..Where.were.you.born."] == "Canada" | multilangparents[i, "X6..Where.were.you.born."] == "Australia" | multilangparents[i, "X6..Where.were.you.born."] == "United Kingdom (UK)"  | multilangparents[i, "X6..Where.were.you.born."] == "United States of America (USA)") &  (multilangparents[i, "X8..Where.do.you.currently.live."] == "Canada" | multilangparents[i, "X8..Where.do.you.currently.live."] == "Australia" | multilangparents[i, "X8..Where.do.you.currently.live."] == "United States of America (USA)"| multilangparents[i, "X8..Where.do.you.currently.live."] == "United Kingdom (UK)") & multilangparents[i, "X12a..Which.language.do.you.consider.to.be.your.first.language."] == "English"){
+    multilangparents[i, "group"] <- "English"
+  }
+  else if((multilangparents[i, "X8..Where.do.you.currently.live."] == "Canada" | multilangparents[i, "X8..Where.do.you.currently.live."] == "Australia" | multilangparents[i, "X8..Where.do.you.currently.live."] == "United States of America (USA)"| multilangparents[i, "X8..Where.do.you.currently.live."] == "United Kingdom (UK)") & multilangparents[i, "X12a..Which.language.do.you.consider.to.be.your.first.language."] != "English"){
+    multilangparents[i, "group"] <- "EnglishMulti"
+  }
+}
+
+
+multilangparents <- subset(multilangparents, group != "NA")
+which(multilangparents$X6..Where.were.you.born. == "Switzerland")
+
+str(multilangparents$group)
+### Function to get summary data
+##Age, Gender, Ethnicity, Education and Profession
+
+
+Summarise_demographics <- function(data) {
+  data %>% group_by(X1..What.is.your.age., X2..What.is.your.gender.) %>% tally() %>%  group_by(X1..What.is.your.age.)
+}
+
+blank_theme <- theme_minimal()+
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.border = element_blank(),
+    panel.grid=element_blank(),
+    axis.ticks = element_blank(),
+    plot.title=element_text(size=14, face="bold")
+  )
+
+data <- data %>% 
+  group_by(X1..What.is.your.age.) %>% 
+  count() %>% 
+  ungroup() %>% 
+  mutate(per=`n`/sum(`n`))
+
+
+
+Summarise_demographics(EnglishMulti)
+Plot_demographics(EnglishMulti)
+
+str(EnglishMulti$X1..What.is.your.age.)
+
+Plot_demographics <- function(data, column, legend.label = quo(column)){
+  
+  ### quo lets you pick out column from dataframe and refer to them
+  ### !! unquotes
+  data_name <- deparse(substitute(data))
+  data2 <- data %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %>%
+    mutate(!!column := as.factor(!!column)) %>% 
+    
+    print(data2)
+  
+  plot <- ggplot(data2, aes(x = !!column, fill = !!column)) + geom_col(aes(y = percent)) + 
+    theme_classic() + theme(legend.position = "none") + xlab(legend.label) + ylab("Percent") + 
+    geom_text(aes(label = paste0(percent, "%"), y = percent), vjust = -0.5) + scale_fill_grey()
+  ggsave(paste0(data_name, legend.label, "_bar", ".png", sep=""), plot, device = "png")
+  plot
+}
+
+
+
+Plot_demographics0.5 <- function(data, column, legend.label = quo(column)){
+  
+  ### quo lets you pick out column from dataframe and refer to them
+  ### !! unquotes
+  data_name <- deparse(substitute(data))
+  column <- enquo(column)
+  data2 <- data %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %>%
+    mutate(!!column := as.factor(!!column)) %>% 
+  
+  print(data2)
+  
+  plot <- ggplot(data2, aes(x = !!column, fill = !!column)) + geom_col(aes(y = percent)) + 
+    theme_classic() + theme(legend.position = "none") + xlab(legend.label) + ylab("Percent") + 
+    geom_text(aes(label = paste0(percent, "%"), y = percent), vjust = -0.5) + scale_fill_grey()
+    ggsave(paste0(data_name, legend.label, "_bar", ".png", sep=""), plot, device = "png")
+  plot
+}
+
+library(forcats)
+
+Plot_demographics1 <- function(data, column, legend.label = quo(column)){
+  
+  ### quo lets you pick out column from dataframe and refer to them
+  ### !! unquotes
+  data_name <- deparse(substitute(data))
+  data2 <- data %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %>%
+    mutate(!!column := as.factor(!!column)) %>% 
+    mutate(column = forcats::fct_reorder(!!column, percent))
+  
+  print(data2)
+  
+  plot <- ggplot(data2, aes(x = column, fill = column)) + geom_col(aes(y = percent)) + 
+    theme_classic() + theme(legend.position = "none") + xlab(legend.label) + ylab("Percent") + 
+    geom_text(aes(label = paste0(percent, "%"), y = percent), vjust = -0.5) + scale_fill_grey()
+  ggsave(paste0(data_name, legend.label, "_bar", ".png", sep=""), plot, device = "png")
+  plot
+}
+
+Plot_demographics1.5 <- function(data, column, legend.label = quo(column)){
+  
+  ### quo lets you pick out column from dataframe and refer to them
+  ### !! unquotes
+  data_name <- deparse(substitute(data))
+  data2 <- data %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %>% 
+    mutate(column = forcats::fct_reorder(!!column, percent))
+  
+  print(data2)
+  
+  plot <- ggplot(data2, aes(x = column, fill = column)) + geom_col(aes(y = percent)) + 
+    theme_classic() + theme(legend.position = "none") + xlab(legend.label) + ylab("Percent") + 
+    geom_text(aes(label = paste0(percent, "%"), y = percent), vjust = -0.5) +
+    theme(axis.text.x = element_text(angle = 25, hjust = 1)) + scale_fill_grey()
+  ggsave(paste0(data_name, legend.label, "_bar_2", ".png", sep=""), plot, device = "png")
+  plot
+}
+
+Tabulate_Results <- function(data, column, legend.label = quo(column)){
+  
+  ###This function requires the following packages: dplyr, knitr and kableExtra.
+  
+  ###deparse(substitute(data)) is used to convert the name of the data into a string
+  ##This helps construct the filename to save the image later.
+  data_name <- deparse(substitute(data))
+  
+  ##dplyr is used to find percentages to plot on the y-axis 
+  data2 <- data %>% 
+    ### !! unquotes
+    group_by(!!column) %>%
+    count() %>% 
+    ungroup() %>% 
+    mutate(Percent=ceiling(100*(`n`/sum(`n`)))) %>%
+    rename(Number = n) %>% 
+    ## Mutate to covert empty values to NA.Note the colon before = 
+    mutate(!!column := na_if(!!column, "")) %>% 
+    ## Note the colon before = needed for renaming in this way 
+    rename(!!legend.label := !!column)
+  
+  print(data2)
+  write_csv(data2, path = paste0(data_name, legend.label, ".csv", sep = ""))
+  knitr::kable(data2, format = "html") %>% kableExtra::kable_styling() %>% 
+    readr::write_file(paste0(data_name, legend.label, "_2", ".html", sep = ""))
+  
+}
+
+
+Plot_demographics(data = NonGermMulti, column = X1..What.is.your.age., legend.label = "Age")
+
+
+###Designed a function that takes data, the name of a column and optionally relabels that column for the purpose of graphing results
+
+Plot_demographics2 <- function(data, column, legend.label = quo(column)){
+    
+    ### quo lets you pick out column from dataframe and refer to them
+    ### !! unquotes
+    data_name <- deparse(substitute(data))
+    data2 <- data %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(per=`n`/sum(`n`)) %>% 
+    arrange(desc(!!column))
+    
+    print(data2)
+    print(data_name)
+  
+  data2$label <- ceiling(data2$per*100)
+  plot <- ggplot(data2, aes(x = "", y= per, fill = !!column)) + geom_bar(width = 1, stat = "identity") + coord_polar("y", start = 0) + 
+  theme_void() + geom_label_repel(aes(x = 1.7, cumsum(per) - per/2, label= paste0(label, "%")), color = "white", size = 4, point.padding = NA,show.legend = FALSE) + 
+  labs(fill = legend.label)
+  ggsave(paste0(data_name, legend.label, ".png", sep=""), plot, device = "png")
+  plot
+  
+}
+
+Plot_demographics3 <- function(data, column, legend.label = quo(column)){
+  
+  ### quo quotes the input but doesn't evaluate it
+  ### !! unquotes
+  data_name <- deparse(substitute(data))
+  data2 <- data %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(per=`n`/sum(`n`)) %>% 
+    arrange(desc(!!column))
+  
+  print(data2)
+  print(data_name)
+  
+  data2$label <- ceiling(data2$per*100)
+  plot <- ggplot(data2, aes(x = "", y= per, fill = !!column)) + geom_bar(width = 1, stat = "identity") + coord_polar("y", start = 0) + 
+    theme_void() + geom_label_repel(aes(x = 1.7, cumsum(per) - per/2, label= paste0(label, "%")), color = "white", size = 4, point.padding = NA,show.legend = FALSE) + 
+    labs(fill = legend.label) + scale_fill_grey()
+  ggsave(paste0(data_name, legend.label, ".png", sep=""), plot, device = "png")
+  plot
+}  
+
+
+
+Plot_demographics1(data = NonGermMulti, column = quo(X1..What.is.your.age.), legend.label = "Age")
+Plot_demographics(data = NonGermAnglo, column = quo(X1..What.is.your.age.), legend.label = "Age")
+Plot_demographics(data = German, column = quo(X1..What.is.your.age.), legend.label = "Age")
+Plot_demographics(data = English, column = quo(X1..What.is.your.age.), legend.label = "Age")
+Plot_demographics(data = EnglishMulti, column = quo(X1..What.is.your.age.), legend.label = "Age")
+
+Plot_demographics3(data = NonGermMulti, column = quo(X2..What.is.your.gender.), legend.label = "Gender")
+Plot_demographics3(data = NonGermAnglo, column = quo(X2..What.is.your.gender.), legend.label = "Gender")
+Plot_demographics3(data = German, column = quo(X2..What.is.your.gender.), legend.label = "Gender")
+Plot_demographics3(data = English, column = quo(X2..What.is.your.gender.), legend.label = "Gender")
+Plot_demographics3(data = EnglishMulti, column = quo(X2..What.is.your.gender.), legend.label = "Gender")
+
+Plot_demographics1(data = NonGermMulti, column = quo(X3..What.is.your.ethnicity.), legend.label = "Ethnicity")
+Plot_demographics1(data = NonGermAnglo, column = quo(X3..What.is.your.ethnicity.), legend.label = "Ethnicity")
+Plot_demographics1(data = German, column = quo(X3..What.is.your.ethnicity.), legend.label = "Ethnicity")
+Plot_demographics1(data = English, column = quo(X3..What.is.your.ethnicity.), legend.label = "Ethnicity")
+Plot_demographics1(data = EnglishMulti, column = quo(X3..What.is.your.ethnicity.), legend.label = "Ethnicity")
+
+Plot_demographics1(data = NonGermMulti, column = quo(X4..What.is.the.highest.level.of.education.you.have.obtained..or.are.in.the.process.of.obtaining..), legend.label = "Education")
+Plot_demographics1(data = NonGermAnglo, column = quo(X4..What.is.the.highest.level.of.education.you.have.obtained..or.are.in.the.process.of.obtaining..), legend.label = "Education")
+Plot_demographics1(data = German, column = quo(X4..What.is.the.highest.level.of.education.you.have.obtained..or.are.in.the.process.of.obtaining..), legend.label = "Education")
+Plot_demographics1(data = English, column = quo(X4..What.is.the.highest.level.of.education.you.have.obtained..or.are.in.the.process.of.obtaining..), legend.label = "Education")
+Plot_demographics1(data = EnglishMulti, column = quo(X4..What.is.the.highest.level.of.education.you.have.obtained..or.are.in.the.process.of.obtaining..), legend.label = "Education")
+
+Plot_demographics1.5(data = NonGermMulti, column = quo(X5..What.is.your.job..), legend.label = "Occupation")
+Plot_demographics1.5(data = NonGermAnglo, column = quo(X5..What.is.your.job..), legend.label = "Occupation")
+Plot_demographics1.5(data = German, column = quo(X5..What.is.your.job..), legend.label = "Occupation")
+Plot_demographics1.5(data = English, column = quo(X5..What.is.your.job..), legend.label = "Occupation")
+Plot_demographics1.5(data = EnglishMulti, column = quo(X5..What.is.your.job..), legend.label = "Occupation")
+
+###Above didn't look good so tabulated
+Tabulate_Results(data = NonGermMulti, column = quo(X5..What.is.your.job..), legend.label = "Occupation")
+
+install.packages("ellipsis")
+
+Plot_demographics3(data = NonGermMulti, column = quo(X10a..How.many.children.do.you.have..if.at.all.), legend.label = "No. of Children")
+Plot_demographics3(data = NonGermAnglo, column = quo(X10a..How.many.children.do.you.have..if.at.all.), legend.label = "No. of Children")
+Plot_demographics3(data = German, column = quo(X10a..How.many.children.do.you.have..if.at.all.), legend.label = "No. of Children")
+Plot_demographics3(data = English, column = quo(X10a..How.many.children.do.you.have..if.at.all.), legend.label = "No. of Children")
+Plot_demographics3(data = EnglishMulti, column = quo(X10a..How.many.children.do.you.have..if.at.all.), legend.label = "No. of Children")
+
+Tabulate_Results(data = NonGermMulti, column = quo(X6..Where.were.you.born.), legend.label = "Location Born")
+Plot_demographics2(data = NonGermAnglo, column = quo(X6..Where.were.you.born.), legend.label = "Location Born")
+Plot_demographics2(data = German, column = quo(X6..Where.were.you.born.), legend.label = "Location Born")
+Plot_demographics2(data = English, column = quo(X6..Where.were.you.born.), legend.label = "Location Born")
+Plot_demographics2(data = EnglishMulti, column = quo(X6..Where.were.you.born.), legend.label = "Location Born")
+
+Plot_demographics1.5(data = NonGermMulti, column = quo(X7..Have.you.moved.to.another.country.), legend.label = "Live Abroad")
+Plot_demographics1.5(data = NonGermAnglo, column = quo(X7..Have.you.moved.to.another.country.), legend.label = "Live Abroad")
+Plot_demographics1.5(data = German, column = quo(X7..Have.you.moved.to.another.country.), legend.label = "Live Abroad")
+Plot_demographics1.5(data = English, column = quo(X7..Have.you.moved.to.another.country.), legend.label = "Live Abroad")
+Plot_demographics1.5(data = EnglishMulti, column = quo(X7..Have.you.moved.to.another.country.), legend.label = "Live Abroad")
+
+Plot_demographics3(data = NonGermMulti, column = quo(X8..Where.do.you.currently.live.), legend.label = "Currently Live")
+Plot_demographics3(data = NonGermAnglo, column = quo(X8..Where.do.you.currently.live.), legend.label = "Currrently Live")
+Plot_demographics3(data = German, column = quo(X8..Where.do.you.currently.live.), legend.label = "Currently Live")
+Plot_demographics3(data = English, column = quo(X8..Where.do.you.currently.live.), legend.label = "Currently Live")
+Plot_demographics3(data = EnglishMulti, column = quo(X8..Where.do.you.currently.live.), legend.label = "Currently Live")
+
+Tabulate_Results(data = NonGermMulti, column = quo(X9..If.you.do.not.live.in.your.country.of.birth..how.long.have.you.lived.in.your.current.country.of.residence.), legend.label = "Years in Current Country of Residence")
+Plot_demographics2(data = NonGermAnglo, column = quo(X9..If.you.do.not.live.in.your.country.of.birth..how.long.have.you.lived.in.your.current.country.of.residence.), legend.label = "Years in Current Country of Residence")
+Plot_demographics2(data = German, column = quo(X9..If.you.do.not.live.in.your.country.of.birth..how.long.have.you.lived.in.your.current.country.of.residence.), legend.label = "Years in Current Country of Residence")
+Plot_demographics2(data = English, column = quo(X9..If.you.do.not.live.in.your.country.of.birth..how.long.have.you.lived.in.your.current.country.of.residence.), legend.label = "Years in Current Country of Residence")
+Plot_demographics2(data = EnglishMulti, column = quo(X9..If.you.do.not.live.in.your.country.of.birth..how.long.have.you.lived.in.your.current.country.of.residence.), legend.label = "Years in Current Country of Residence")
+
+Plot_demographics3(data = NonGermMulti, column = quo(X11..From.the.choices.below..what.do.you.consider.yourself.to.be..), legend.label = "Languages Spoken")
+Plot_demographics3(data = NonGermAnglo, column = quo(X11..From.the.choices.below..what.do.you.consider.yourself.to.be..), legend.label = "Languages Spoken")
+Plot_demographics3(data = German, column = quo(X11..From.the.choices.below..what.do.you.consider.yourself.to.be..), legend.label = "Languages Spoken")
+Plot_demographics3(data = English, column = quo(X11..From.the.choices.below..what.do.you.consider.yourself.to.be..), legend.label = "Languages Spoken")
+Plot_demographics3(data = EnglishMulti, column = quo(X11..From.the.choices.below..what.do.you.consider.yourself.to.be..), legend.label = "Languages Spoken")
+
+Tabulate_Results(data = NonGermMulti, column = quo(X12a..Which.language.do.you.consider.to.be.your.first.language.), legend.label = "First Language")
+Plot_demographics2(data = NonGermAnglo, column = quo(X12a..Which.language.do.you.consider.to.be.your.first.language.), legend.label = "First Language")
+Plot_demographics2(data = German, column = quo(X12a..Which.language.do.you.consider.to.be.your.first.language.), legend.label = "First Language")
+Plot_demographics2(data = English, column = quo(X12a..Which.language.do.you.consider.to.be.your.first.language.), legend.label = "First Language")
+Plot_demographics2(data = EnglishMulti, column = quo(X12a..Which.language.do.you.consider.to.be.your.first.language.), legend.label = "First Language")
+
+Plot_demographics(data = NonGermMulti, column = quo(X12b..Please.rate.your.proficiency.in.your.first.language.using.the.scale.below.), legend.label = "First Language Proficiency")
+Plot_demographics(data = NonGermAnglo, column = quo(X12b..Please.rate.your.proficiency.in.your.first.language.using.the.scale.below.), legend.label = "First Language Proficiency")
+Plot_demographics(data = German, column = quo(X12b..Please.rate.your.proficiency.in.your.first.language.using.the.scale.below.), legend.label = "First Language Proficiency")
+Plot_demographics(data = English, column = quo(X12b..Please.rate.your.proficiency.in.your.first.language.using.the.scale.below.), legend.label = "First Language Proficiency")
+Plot_demographics(data = EnglishMulti, column = quo(X12b..Please.rate.your.proficiency.in.your.first.language.using.the.scale.below.), legend.label = "First Language Proficiency")
+
+Plot_demographics(data = NonGermMulti, column = quo(X12c..Please.state.how.frequently.you.use.your.first.language.in.an.average.week..0.represents.never..5.is.50..of.the.time.and.10.is.always..), legend.label = "First Language Use")
+Plot_demographics(data = NonGermAnglo, column = quo(X12c..Please.state.how.frequently.you.use.your.first.language.in.an.average.week..0.represents.never..5.is.50..of.the.time.and.10.is.always..), legend.label = "First Language Use")
+Plot_demographics(data = German, column = quo(X12c..Please.state.how.frequently.you.use.your.first.language.in.an.average.week..0.represents.never..5.is.50..of.the.time.and.10.is.always..), legend.label = "First Language Use")
+Plot_demographics(data = English, column = quo(X12c..Please.state.how.frequently.you.use.your.first.language.in.an.average.week..0.represents.never..5.is.50..of.the.time.and.10.is.always..), legend.label = "First Language Use")
+Plot_demographics(data = EnglishMulti, column = quo(X12c..Please.state.how.frequently.you.use.your.first.language.in.an.average.week..0.represents.never..5.is.50..of.the.time.and.10.is.always..), legend.label = "First Language Use")
+
+
+Tabulate_Results(data = NonGermMulti, column = quo(X13a..If.you.have.a.second.language..which.do.you.consider.this.to.be..), legend.label = "Second Language")
+Plot_demographics2(data = NonGermAnglo, column = quo(X13a..If.you.have.a.second.language..which.do.you.consider.this.to.be..), legend.label = "Second Language")
+Plot_demographics2(data = German, column = quo(X13a..If.you.have.a.second.language..which.do.you.consider.this.to.be..), legend.label = "Second Language")
+Plot_demographics2(data = English, column = quo(X13a..If.you.have.a.second.language..which.do.you.consider.this.to.be..), legend.label = "Second Language")
+Plot_demographics2(data = EnglishMulti, column = quo(X13a..If.you.have.a.second.language..which.do.you.consider.this.to.be..), legend.label = "Second Language")
+
+Plot_demographics(data = NonGermMulti, column = quo(X13b..Please.rate.your.proficiency.in.your.second.language.using.the.scale.below.), legend.label = "Second Language Proficiency")
+Plot_demographics(data = NonGermAnglo, column = quo(X13b..Please.rate.your.proficiency.in.your.second.language.using.the.scale.below.), legend.label = "Second Language Proficiency")
+Plot_demographics(data = German, column = quo(X13b..Please.rate.your.proficiency.in.your.second.language.using.the.scale.below.), legend.label = "Second Language Proficiency")
+Plot_demographics(data = English, column = quo(X13b..Please.rate.your.proficiency.in.your.second.language.using.the.scale.below.), legend.label = "Second Language Proficiency")
+Plot_demographics(data = EnglishMulti, column = quo(X13b..Please.rate.your.proficiency.in.your.second.language.using.the.scale.below.), legend.label = "Second Language Proficiency")
+
+Plot_demographics(data = NonGermMulti, column = quo(X13c..Please.state.how.frequently.you.use.your.second.language.in.an.average.week..0.represents.never..5.is.50..of.the.time.and.10.is.always..), legend.label = "Second Language Use")
+Plot_demographics(data = NonGermAnglo, column = quo(X13c..Please.state.how.frequently.you.use.your.second.language.in.an.average.week..0.represents.never..5.is.50..of.the.time.and.10.is.always..), legend.label = "Second Language Use")
+Plot_demographics(data = German, column = quo(X13c..Please.state.how.frequently.you.use.your.second.language.in.an.average.week..0.represents.never..5.is.50..of.the.time.and.10.is.always..), legend.label = "Second Language Use")
+Plot_demographics(data = English, column = quo(X13c..Please.state.how.frequently.you.use.your.second.language.in.an.average.week..0.represents.never..5.is.50..of.the.time.and.10.is.always..), legend.label = "Second Language Use")
+Plot_demographics(data = EnglishMulti, column = quo(X13c..Please.state.how.frequently.you.use.your.second.language.in.an.average.week..0.represents.never..5.is.50..of.the.time.and.10.is.always..), legend.label = "Second Language Use")
+
+
+Tabulate_Results(data = NonGermMulti, column = quo(X14a..If.you.have.a.third.language..which.do.you.consider.this.to.be.), legend.label = "Third Language")
+Plot_demographics2(data = NonGermAnglo, column = quo(X14a..If.you.have.a.third.language..which.do.you.consider.this.to.be.), legend.label = "Third Language")
+Plot_demographics2(data = German, column = quo(X14a..If.you.have.a.third.language..which.do.you.consider.this.to.be.), legend.label = "Third Language")
+Plot_demographics2(data = English, column = quo(X14a..If.you.have.a.third.language..which.do.you.consider.this.to.be.), legend.label = "Third Language")
+Plot_demographics2(data = EnglishMulti, column = quo(X14a..If.you.have.a.third.language..which.do.you.consider.this.to.be.), legend.label = "Third Language")
+
+Plot_demographics(data = NonGermMulti, column = quo(X14b..Please.rate.your.proficiency.in.your.third.language.using.the.scale.below.), legend.label = "Third Language Proficiency")
+Plot_demographics(data = NonGermAnglo, column = quo(X14b..Please.rate.your.proficiency.in.your.third.language.using.the.scale.below.), legend.label = "Third Language Proficiency")
+Plot_demographics(data = German, column = quo(X14b..Please.rate.your.proficiency.in.your.third.language.using.the.scale.below.), legend.label = "Third Language Proficiency")
+Plot_demographics(data = English, column = quo(X14b..Please.rate.your.proficiency.in.your.third.language.using.the.scale.below.), legend.label = "Third Language Proficiency")
+Plot_demographics(data = EnglishMulti, column = quo(X14b..Please.rate.your.proficiency.in.your.third.language.using.the.scale.below.), legend.label = "Third Language Profiiency")
+
+Plot_demographics(data = NonGermMulti, column = quo(X14c..Please.state.how.frequently.you.use.your.third.language.in.an.average.week..0.represents.never..5.is.50..of.the.time.and.10.is.always..), legend.label = "Third Language Use")
+Plot_demographics(data = NonGermAnglo, column = quo(X14c..Please.state.how.frequently.you.use.your.third.language.in.an.average.week..0.represents.never..5.is.50..of.the.time.and.10.is.always..), legend.label = "Third Language Use")
+Plot_demographics(data = German, column = quo(X14c..Please.state.how.frequently.you.use.your.third.language.in.an.average.week..0.represents.never..5.is.50..of.the.time.and.10.is.always..), legend.label = "Third Language Use")
+Plot_demographics(data = English, column = quo(X14c..Please.state.how.frequently.you.use.your.third.language.in.an.average.week..0.represents.never..5.is.50..of.the.time.and.10.is.always..), legend.label = "Third Language Use")
+Plot_demographics(data = EnglishMulti, column = quo(X14c..Please.state.how.frequently.you.use.your.third.language.in.an.average.week..0.represents.never..5.is.50..of.the.time.and.10.is.always..), legend.label = "Third Language Use")
+
+
+
+library(tidyverse)
+NonGermMulti$X14c..Please.state.how.frequently.you.use.your.third.language.in.an.average.week..0.represents.never..5.is.50..of.the.time.and.10.is.always..
+
+
+#NonGermMultitosplit <- as.data.frame(NonGermMulti)
+NonGermMultitosplit <- NonGermMulti
+NonGermMultisplit <- NonGermMultitosplit %>% separate_rows(X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...0.2.:X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...71.85., sep = ";") %>% select(X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...0.2.:X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...71.85.) %>%  na_if(., "") %>% mutate_all(funs(as.factor))
+plot(NonGermMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...0.2.)
+View(NonGermMultisplit)
+
+
+NonGermMultisplit$`0-2` <- NonGermMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...0.2. 
+NonGermMultisplit$`3-5` <- NonGermMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...3.5.
+NonGermMultisplit$`6-9` <- NonGermMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...6.9.
+NonGermMultisplit$`10-13` <- NonGermMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...10.13.
+NonGermMultisplit$`14-18` <- NonGermMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...14.18.
+NonGermMultisplit$`19-23` <- NonGermMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...19.23.
+NonGermMultisplit$`24-29` <- NonGermMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...24.29.
+NonGermMultisplit$`30-35` <- NonGermMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...30.35.
+NonGermMultisplit$`36-45` <- NonGermMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...36.45.
+NonGermMultisplit$`46-55` <- NonGermMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...46.55.
+NonGermMultisplit$`56-70` <- NonGermMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...56.70.
+NonGermMultisplit$`71-85` <- NonGermMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...71.85.
+
+str(NonGermMultisplit)
+
+View(NonGermMultisplit_long)
+NonGermMultisplit_long <- NonGermMultisplit %>% select(`0-2`:`71-85`) %>% 
+  pivot_longer(., cols = c(`0-2`:`71-85`), names_to = "Var", values_to = "Val")  %>%  drop_na() %>% group_by(Var, Val) %>% tally() %>% 
+  ggplot(aes(x = factor(Var, level = c("0-2", "3-5", "6-9", "10-13", "14-18", "19-23", "24-29", "30-35", "36-45", "46-55", "56-70", "71-85")), y = n, fill = Val)) + geom_bar(stat = "identity", position = position_dodge2(width = 0.9, preserve = "single")) +
+  theme_classic() + labs(fill = "Child", x = "Age of child", y = "Number") + scale_fill_grey() + theme(axis.text.x = element_text(angle = 35, hjust = 1), legend.position = "none", legend.title = element_text(size = 18), legend.text =  element_text(size = 16), axis.text = element_text(size = 14), axis.title = element_text(size = 16))
+plot(NonGermMultisplit_long)
+
+
+
+
+
+NonGermAnglotosplit <- NonGermAnglo
+NonGermAnglosplit <- NonGermAnglotosplit %>% separate_rows(X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...0.2.:X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...71.85., sep = ";") %>% select(X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...0.2.:X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...71.85.) %>%  na_if(., "") %>% mutate_all(funs(as.factor))
+plot(NonGermAnglosplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...0.2.)
+View(NonGermAnglosplit)
+
+
+NonGermAnglosplit$`0-2` <- NonGermAnglosplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...0.2. 
+NonGermAnglosplit$`3-5` <- NonGermAnglosplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...3.5.
+NonGermAnglosplit$`6-9` <- NonGermAnglosplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...6.9.
+NonGermAnglosplit$`10-13` <- NonGermAnglosplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...10.13.
+NonGermAnglosplit$`14-18` <- NonGermAnglosplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...14.18.
+NonGermAnglosplit$`19-23` <- NonGermAnglosplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...19.23.
+NonGermAnglosplit$`24-29` <- NonGermAnglosplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...24.29.
+NonGermAnglosplit$`30-35` <- NonGermAnglosplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...30.35.
+NonGermAnglosplit$`36-45` <- NonGermAnglosplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...36.45.
+NonGermAnglosplit$`46-55` <- NonGermAnglosplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...46.55.
+NonGermAnglosplit$`56-70` <- NonGermAnglosplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...56.70.
+NonGermAnglosplit$`71-85` <- NonGermAnglosplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...71.85.
+
+str(NonGermAnglosplit)
+
+View(NonGermAnglosplit_long)
+NonGermAnglosplit_long <- NonGermAnglosplit %>% select(`0-2`:`71-85`) %>% 
+  pivot_longer(., cols = c(`0-2`:`71-85`), names_to = "Var", values_to = "Val")  %>%  drop_na() %>% group_by(Var, Val) %>% tally() %>% 
+  ggplot(aes(x = factor(Var, level = c("0-2", "3-5", "6-9", "10-13", "14-18", "19-23", "24-29", "30-35", "36-45", "46-55", "56-70", "71-85")), y = n, fill = Val)) + geom_bar(stat = "identity", position = position_dodge2(width = 0.9, preserve = "single")) +
+  theme_classic() + labs(fill = "Child", x = "Age of child", y = "Number") + scale_fill_grey() + theme(axis.text.x = element_text(angle = 35, hjust = 1), legend.position = "none", legend.title = element_text(size = 18), legend.text =  element_text(size = 16), axis.text = element_text(size = 12), axis.title = element_text(size = 14))
+plot(NonGermAnglosplit_long)
+
+
+
+
+
+Germantosplit <- German
+Germansplit <- Germantosplit %>% separate_rows(X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...0.2.:X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...71.85., sep = ";") %>% select(X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...0.2.:X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...71.85.) %>%  na_if(., "") %>% mutate_all(funs(as.factor))
+plot(Germansplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...0.2.)
+View(Germansplit)
+
+
+Germansplit$`0-2` <- Germansplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...0.2. 
+Germansplit$`3-5` <- Germansplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...3.5.
+Germansplit$`6-9` <- Germansplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...6.9.
+Germansplit$`10-13` <- Germansplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...10.13.
+Germansplit$`14-18` <- Germansplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...14.18.
+Germansplit$`19-23` <- Germansplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...19.23.
+Germansplit$`24-29` <- Germansplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...24.29.
+Germansplit$`30-35` <- Germansplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...30.35.
+Germansplit$`36-45` <- Germansplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...36.45.
+Germansplit$`46-55` <- Germansplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...46.55.
+Germansplit$`56-70` <- Germansplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...56.70.
+Germansplit$`71-85` <- Germansplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...71.85.
+
+str(Germansplit)
+
+View(Germansplit_long)
+Germansplit_long <- Germansplit %>% select(`0-2`:`71-85`) %>% 
+  pivot_longer(., cols = c(`0-2`:`71-85`), names_to = "Var", values_to = "Val")  %>%  drop_na() %>% group_by(Var, Val) %>% tally() %>% 
+  ggplot(aes(x = factor(Var, level = c("0-2", "3-5", "6-9", "10-13", "14-18", "19-23", "24-29", "30-35", "36-45", "46-55", "56-70", "71-85")), y = n, fill = Val)) + geom_bar(stat = "identity", position = position_dodge2(width = 0.9, preserve = "single")) +
+  theme_classic() + labs(fill = "Child", x = "Age of child", y = "Number") + scale_fill_grey() + theme(axis.text.x = element_text(angle = 35, hjust = 1), legend.position = "none", axis.text = element_text(size = 12), axis.title = element_text(size = 14))
+plot(Germansplit_long)
+
+
+
+Englishtosplit <- English
+Englishsplit <- Englishtosplit %>% separate_rows(X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...0.2.:X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...71.85., sep = ";") %>% select(X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...0.2.:X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...71.85.) %>%  na_if(., "") %>% mutate_all(funs(as.factor))
+plot(Englishsplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...0.2.)
+View(Englishsplit)
+
+
+Englishsplit$`0-2` <- Englishsplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...0.2. 
+Englishsplit$`3-5` <- Englishsplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...3.5.
+Englishsplit$`6-9` <- Englishsplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...6.9.
+Englishsplit$`10-13` <- Englishsplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...10.13.
+Englishsplit$`14-18` <- Englishsplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...14.18.
+Englishsplit$`19-23` <- Englishsplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...19.23.
+Englishsplit$`24-29` <- Englishsplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...24.29.
+Englishsplit$`30-35` <- Englishsplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...30.35.
+Englishsplit$`36-45` <- Englishsplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...36.45.
+Englishsplit$`46-55` <- Englishsplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...46.55.
+Englishsplit$`56-70` <- Englishsplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...56.70.
+Englishsplit$`71-85` <- Englishsplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...71.85.
+
+str(Englishsplit)
+
+View(Englishsplit_long)
+Englishsplit_long <- Englishsplit %>% select(`0-2`:`71-85`) %>% 
+  pivot_longer(., cols = c(`0-2`:`71-85`), names_to = "Var", values_to = "Val")  %>%  drop_na() %>% group_by(Var, Val) %>% tally() %>% 
+  ggplot(aes(x = factor(Var, level = c("0-2", "3-5", "6-9", "10-13", "14-18", "19-23", "24-29", "30-35", "36-45", "46-55", "56-70", "71-85")), y = n, fill = Val)) + geom_bar(stat = "identity", position = position_dodge2(width = 0.9, preserve = "single")) +
+  theme_classic() + labs(fill = "Child", x = "Age of child", y = "Number") + scale_fill_grey() + theme(axis.text.x = element_text(angle = 35, hjust = 1), legend.position = "none", axis.text = element_text(size = 12), axis.title = element_text(size = 14))
+plot(Englishsplit_long)
+
+
+EnglishMultitosplit <- EnglishMulti
+EnglishMultisplit <- EnglishMultitosplit %>% separate_rows(X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...0.2.:X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...71.85., sep = ";") %>% select(X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...0.2.:X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...71.85.) %>%  na_if(., "") %>% mutate_all(funs(as.factor))
+plot(EnglishMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...0.2.)
+View(EnglishMultisplit)
+
+
+EnglishMultisplit$`0-2` <- EnglishMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...0.2. 
+EnglishMultisplit$`3-5` <- EnglishMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...3.5.
+EnglishMultisplit$`6-9` <- EnglishMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...6.9.
+EnglishMultisplit$`10-13` <- EnglishMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...10.13.
+EnglishMultisplit$`14-18` <- EnglishMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...14.18.
+EnglishMultisplit$`19-23` <- EnglishMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...19.23.
+EnglishMultisplit$`24-29` <- EnglishMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...24.29.
+EnglishMultisplit$`30-35` <- EnglishMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...30.35.
+EnglishMultisplit$`36-45` <- EnglishMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...36.45.
+EnglishMultisplit$`46-55` <- EnglishMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...46.55.
+EnglishMultisplit$`56-70` <- EnglishMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...56.70.
+EnglishMultisplit$`71-85` <- EnglishMultisplit$X10b..If.you.are.a.parent..how.old.is.your.child...are.your.children...71.85.
+
+str(EnglishMultisplit)
+
+View(EnglishMultisplit_long)
+EnglishMultisplit_long <- EnglishMultisplit %>% select(`0-2`:`71-85`) %>% 
+  pivot_longer(., cols = c(`0-2`:`71-85`), names_to = "Var", values_to = "Val")  %>%  drop_na() %>% group_by(Var, Val) %>% tally() %>% 
+  ggplot(aes(x = factor(Var, level = c("0-2", "3-5", "6-9", "10-13", "14-18", "19-23", "24-29", "30-35", "36-45", "46-55", "56-70", "71-85")), y = n, fill = Val)) + geom_bar(stat = "identity", position = position_dodge2(width = 0.9, preserve = "single")) +
+  theme_classic() + labs(fill = "Child", x = "Age of child", y = "Number") + scale_fill_grey() + theme(axis.text.x = element_text(angle = 35, hjust = 1), legend.position = "none", axis.text = element_text(size = 12), axis.title = element_text(size = 14))
+plot(EnglishMultisplit_long)
+
+legend1 <- get_legend(NonGermAnglosplit_long + 
+                        guides(color = guide_legend(nrow = 1)) +
+                        theme(legend.position = "right"))
+
+top_row_all <- cowplot::plot_grid(NonGermMultisplit_long, NonGermAnglosplit_long, Germansplit_long, rel_widths = c(1, 1, 1), nrow = 1, labels = c("A", "B", "C"))
+bottom_row_all <- cowplot::plot_grid(Englishsplit_long, EnglishMultisplit_long, legend1, rel_widths = c(1, 1, .4), nrow = 1, labels = c("D", "E"))
+myplot_all <- cowplot::plot_grid(top_row_all, bottom_row_all, nrow = 2, rel_widths = c(1, 1)) + theme(plot.margin = unit(c(1,1,1,1), "cm"))
+
+legend = "A = Non German Multi        B = Non German Anglo      C = German       D = English      E = English Multi"
+ggsave(filename=paste0("myplot_all", "_bar_", ".png", sep = ""), 
+       plot = myplot_all, 
+       device = "png", 
+       height = 297, 
+       width = 420, 
+       units = "mm")
+image_all <- image_read(paste0("myplot_all", "_bar_", ".png", sep = ""))
+annotated_all <- image_annotate(image_all, "Age of Children", size = 95, gravity = "North")
+annotated2_all <- image_annotate(annotated_all, legend, size = 75, gravity = "South")
+image_write(annotated2_all, path = paste0("myplot_all", "_bar_2", ".png", sep = ""))
+
+
+
+cowplot::get_legend(NonGermAnglosplit_long)

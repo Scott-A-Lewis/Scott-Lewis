@@ -1,0 +1,562 @@
+library(dplyr)
+library(ggplot2)
+library(ggrepel)
+library(cowplot)
+library(magick)
+
+Thoughts.on.raising.children.with.more.than.one.language <- read.csv("C:/Users/2011s/Desktop/Esther data - Bilingual Children/Thoughts on raising children with more than one language.csv")
+multilangdata <- Thoughts.on.raising.children.with.more.than.one.language
+multilangdata$kidnum <- multilangdata$X10a..How.many.children.do.you.have..if.at.all.
+multilangdata$kidnum <- droplevels(multilangdata$kidnum)
+
+########################Only interested in parents#####################################
+multilangparents <- subset(multilangdata, kidnum != "None")
+multilangparents <- subset(multilangdata, kidnum == "1" | kidnum == "2" | kidnum == "3" | kidnum == "4" | kidnum == "5" | kidnum == "6" | kidnum == "7")
+View(multilangparents)
+
+NonGermMulti <- subset(multilangparents, X6..Where.were.you.born. != "Germany" & X8..Where.do.you.currently.live. == "Germany" & multilangparents$X12a..Which.language.do.you.consider.to.be.your.first.language. != "English")
+nrow(NonGermMulti)
+View(NonGermMulti)
+
+###Non-Germans living in Germany who have English as an L1. NonGermAnglo
+
+NonGermAnglo <- subset(multilangparents, X6..Where.were.you.born. != "Germany" & X8..Where.do.you.currently.live. == "Germany" & multilangparents$X12a..Which.language.do.you.consider.to.be.your.first.language. == "English")
+nrow(NonGermAnglo)
+
+###Germans living in Germany who have German as an L1. German
+
+German <-  subset(multilangparents, X6..Where.were.you.born. == "Germany" & X8..Where.do.you.currently.live. == "Germany" & multilangparents$X12a..Which.language.do.you.consider.to.be.your.first.language. == "German")
+nrow(German)
+
+###Live in an Anglophone country (Canada, Australia, US, UK) consider English native language. English
+### This was 129 before I removed those that weren't born in Anglophone countries)
+English <- subset(multilangparents, (X6..Where.were.you.born. == "Canada" | X6..Where.were.you.born. == "Australia" | X6..Where.were.you.born. == "United Kingdom (UK)"  | X6..Where.were.you.born. == "United States of America (USA)") &  (X8..Where.do.you.currently.live. == "Canada" | X8..Where.do.you.currently.live. == "Australia" | X8..Where.do.you.currently.live. == "United States of America (USA)"| X8..Where.do.you.currently.live. == "United Kingdom (UK)") & multilangparents$X12a..Which.language.do.you.consider.to.be.your.first.language. == "English")
+nrow(English)
+View(English)
+
+
+###Live in Anglophone country but don't consider English to be L1. EnglishMulti
+EnglishMulti <- subset(multilangparents, (X8..Where.do.you.currently.live. == "Canada" | X8..Where.do.you.currently.live. == "Australia" | X8..Where.do.you.currently.live. == "United States of America (USA)"| X8..Where.do.you.currently.live. == "United Kingdom (UK)") & multilangparents$X12a..Which.language.do.you.consider.to.be.your.first.language. != "English")
+nrow(EnglishMulti)
+View(EnglishMulti)
+
+
+####################################Plotting Functions########################################
+
+Plot_demographics <- function(column, legend.label = quo(column)){
+  
+  ### quo lets you pick out column from dataframe and refer to them
+  ### !! unquotes
+  data_name <- deparse(substitute(column))
+  column <- enquo(column)
+  
+  data_a <- NonGermMulti %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %>%
+    mutate(!!column := as.factor(!!column)) 
+
+  plot_a <- ggplot(data_a, aes(x = !!column, fill = !!column)) + geom_col(aes(y = percent)) + 
+    theme_classic() + theme(legend.position = "none") + xlab("") + ylab("Percent") + 
+    geom_text(aes(label = paste0(percent, "%"), y = percent), vjust = -0.5) + scale_fill_grey() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) + theme(axis.text = element_text(size = 11), axis.title = element_text(size = 14))
+  
+  data_b <- NonGermAnglo %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %>%
+    mutate(!!column := as.factor(!!column)) 
+    
+    plot_b <- ggplot(data_b, aes(x = !!column, fill = !!column)) + geom_col(aes(y = percent)) + 
+    theme_classic() + theme(legend.position = "none") + xlab("") + ylab("Percent") + 
+    geom_text(aes(label = paste0(percent, "%"), y = percent), vjust = -0.5) + scale_fill_grey() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) + theme(axis.text = element_text(size = 11), axis.title = element_text(size = 14))
+  
+  data_c <- German %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %>%
+    mutate(!!column := as.factor(!!column)) 
+    
+    plot_c <- ggplot(data_c, aes(x = !!column, fill = !!column)) + geom_col(aes(y = percent)) + 
+    theme_classic() + theme(legend.position = "none") + xlab("") + ylab("Percent") + 
+    geom_text(aes(label = paste0(percent, "%"), y = percent), vjust = -0.5) + scale_fill_grey() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) + theme(axis.text = element_text(size = 11), axis.title = element_text(size = 14))
+  
+  data_d <- English %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %>%
+    mutate(!!column := as.factor(!!column)) 
+    
+    plot_d <- ggplot(data_d, aes(x = !!column, fill = !!column)) + geom_col(aes(y = percent)) + 
+    theme_classic() + theme(legend.position = "none") + xlab("") + ylab("Percent") + 
+    geom_text(aes(label = paste0(percent, "%"), y = percent), vjust = -0.5) + scale_fill_grey() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) + theme(axis.text = element_text(size = 11), axis.title = element_text(size = 14))
+  
+  data_e <- EnglishMulti %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %>%
+    mutate(!!column := as.factor(!!column))
+    
+    plot_e <- ggplot(data_e, aes(x = !!column, fill = !!column)) + geom_col(aes(y = percent)) + 
+    theme_classic() + theme(legend.position = "none") + xlab("") + ylab("Percent") + 
+    geom_text(aes(label = paste0(percent, "%"), y = percent), vjust = -0.5) + scale_fill_grey() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) + theme(axis.text = element_text(size = 11), axis.title = element_text(size = 14))
+    
+#    title <- ggdraw() + 
+#      draw_label(
+#        legend.label,
+#        fontface = 'bold',
+#        x = 0,
+#        hjust = 0
+#      ) +
+#      theme(    plot.margin = margin(0, 0, 0, 7)
+#      )
+    
+    legend = "A = Non German Multi        B = Non German Anglo      C = German       D = English      E = English Multi"
+    plots <- align_plots(plot_a, plot_b, plot_c, plot_d, plot_e, align = 'v', axis = 'l')
+    top_row <- cowplot::plot_grid(plots[[1]], plots[[2]], plots[[3]], rel_widths = c(1, 1, 1), nrow = 1, labels = c("A", "B", "C"))
+    bottom_row <- cowplot::plot_grid(plots[[4]], plots[[5]], rel_widths = c(1, 1, .3), nrow = 1, labels = c("D", "E"))
+    myplot <- cowplot::plot_grid(top_row, bottom_row, nrow = 2) + theme(plot.margin = unit(c(1,0.5,0.5,0.5), "cm"))
+#    myplot <- cowplot::plot_grid(plot_a, plot_b, plot_c, plot_d, plot_e, rel_heights = c(0.8, 0.8),
+#                labels = "AUTO") + theme(plot.margin = unit(c(1,0.5,0.5,0.5), "cm"))
+    ggsave(filename=paste0(data_name, "_bar_", ".png", sep = ""), 
+           plot = myplot, 
+           device = "png", 
+           height = 297, 
+           width = 420, 
+           units = "mm")
+    image <- image_read(paste0(data_name, "_bar_", ".png", sep = ""))
+    annotated <- image_annotate(image, legend.label, size = 95, gravity = "North")
+    annotated2 <- image_annotate(annotated, legend, size = 75, gravity = "South")
+    image_write(annotated2, path = paste0(data_name, "_bar_2", ".png", sep = ""))
+    
+    myplot
+}
+Plot_demographics(column = X1..What.is.your.age., legend.label = "Age")
+Plot_demographics(column = X3..What.is.your.ethnicity., legend.label = "Ethnicity")
+Plot_demographics(column = X4..What.is.the.highest.level.of.education.you.have.obtained..or.are.in.the.process.of.obtaining.., legend.label = "Education")
+###Occupation didn't work! Too many jobs!
+Plot_demographics(column = X5..What.is.your.job.., legend.label = "Occupation")
+Plot_demographics(column = X10a..How.many.children.do.you.have..if.at.all., legend.label = "No. of Children")
+Plot_demographics(column = X7..Have.you.moved.to.another.country., legend.label = "Live Abroad")
+
+
+
+
+Plot_demographics2 <- function(column, legend.label = quo(column)){
+  
+  ### quo lets you pick out column from dataframe and refer to them
+  ### !! unquotes
+  data_name <- deparse(substitute(column))
+  column <- enquo(column)
+  
+  data_a <- NonGermMulti %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %>%
+    mutate(!!column := as.factor(!!column)) 
+  
+  plot_a <- ggplot(data_a, aes(x = !!column, fill = !!column)) + geom_col(aes(y = percent)) + 
+    theme_classic() + theme(legend.position = "none") + xlab("") + ylab("Percent") + 
+    geom_text(aes(label = paste0(percent, "%"), y = percent), vjust = -0.5) + scale_fill_grey() +
+    theme(axis.text.x = element_text(angle = 35, hjust = 1)) + theme(axis.text = element_text(size = 11), axis.title = element_text(size = 14)) + coord_cartesian(clip = "off")
+  
+  data_b <- NonGermAnglo %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %>%
+    mutate(!!column := as.factor(!!column)) 
+  
+  plot_b <- ggplot(data_b, aes(x = !!column, fill = !!column)) + geom_col(aes(y = percent)) + 
+    theme_classic() + theme(legend.position = "none") + xlab("") + ylab("Percent") + 
+    geom_text(aes(label = paste0(percent, "%"), y = percent), vjust = -0.5) + scale_fill_grey() +
+    theme(axis.text.x = element_text(angle = 35, hjust = 1)) + theme(axis.text = element_text(size = 11), axis.title = element_text(size = 14)) + coord_cartesian(clip = "off")
+  
+  data_c <- German %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %>%
+    mutate(!!column := as.factor(!!column)) 
+  
+  plot_c <- ggplot(data_c, aes(x = !!column, fill = !!column)) + geom_col(aes(y = percent)) + 
+    theme_classic() + theme(legend.position = "none") + xlab("") + ylab("Percent") + 
+    geom_text(aes(label = paste0(percent, "%"), y = percent), vjust = -0.5) + scale_fill_grey() +
+    theme(axis.text.x = element_text(angle = 35, hjust = 1)) + theme(axis.text = element_text(size = 11), axis.title = element_text(size = 14)) + coord_cartesian(clip = "off")
+  
+  data_d <- English %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %>%
+    mutate(!!column := as.factor(!!column)) 
+  
+  plot_d <- ggplot(data_d, aes(x = !!column, fill = !!column)) + geom_col(aes(y = percent)) + 
+    theme_classic() + theme(legend.position = "none") + xlab("") + ylab("Percent") + 
+    geom_text(aes(label = paste0(percent, "%"), y = percent), vjust = -0.5) + scale_fill_grey() +
+    theme(axis.text.x = element_text(angle = 35, hjust = 1)) + theme(axis.text = element_text(size = 11), axis.title = element_text(size = 14)) + coord_cartesian(clip = "off")
+  
+  data_e <- EnglishMulti %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %>%
+    mutate(!!column := as.factor(!!column))
+  
+  plot_e <- ggplot(data_e, aes(x = !!column, fill = !!column)) + geom_col(aes(y = percent)) + 
+    theme_classic() + theme(legend.position = "none") + xlab("") + ylab("Percent") + 
+    geom_text(aes(label = paste0(percent, "%"), y = percent), vjust = -0.5) + scale_fill_grey() +
+    theme(axis.text.x = element_text(angle = 35, hjust = 1)) + theme(axis.text = element_text(size = 11), axis.title = element_text(size = 14)) + coord_cartesian(clip = "off")
+  
+  #    title <- ggdraw() + 
+  #      draw_label(
+  #        legend.label,
+  #        fontface = 'bold',
+  #        x = 0,
+  #        hjust = 0
+  #      ) +
+  #      theme(    plot.margin = margin(0, 0, 0, 7)
+  #      )
+  
+  legend = "A = Non German Multi        B = Non German Anglo      C = German       D = English      E = English Multi"
+  plots <- align_plots(plot_a, plot_b, plot_c, plot_d, plot_e, align = 'v', axis = 'l')
+  top_row <- cowplot::plot_grid(plots[[1]], plots[[2]], plots[[3]], rel_widths = c(1, 1, 1), nrow = 1, labels = c("A", "B", "C"))
+  bottom_row <- cowplot::plot_grid(plots[[4]], plots[[5]], rel_widths = c(1, 1, .3), nrow = 1, labels = c("D", "E"))
+  myplot <- cowplot::plot_grid(top_row, bottom_row, nrow = 2, vjust = -1.2) + theme(plot.margin = unit(c(2,2,2,2), "cm"))
+  #    myplot <- cowplot::plot_grid(plot_a, plot_b, plot_c, plot_d, plot_e, rel_heights = c(0.8, 0.8),
+  #                labels = "AUTO") + theme(plot.margin = unit(c(1,0.5,0.5,0.5), "cm"))
+  ggsave(filename=paste0(data_name, "_bar_", ".png", sep = ""), 
+         plot = myplot, 
+         device = "png", 
+         height = 297, 
+         width = 420, 
+         units = "mm")
+  image <- image_read(paste0(data_name, "_bar_", ".png", sep = ""))
+  annotated <- image_annotate(image, legend.label, size = 95, gravity = "North")
+  annotated2 <- image_annotate(annotated, legend, size = 75, gravity = "South")
+  image_write(annotated2, path = paste0(data_name, "_bar_2", ".png", sep = ""))
+  
+  myplot
+}
+
+
+Plot_demographics2(column = X7..Have.you.moved.to.another.country., legend.label = "Live Abroad")
+Plot_demographics2(column = X8..Where.do.you.currently.live., legend.label = "Currently Live")
+Plot_demographics2(column = X13b..Please.rate.your.proficiency.in.your.second.language.using.the.scale.below., legend.label = "Second Language Proficiency")
+
+
+Plot_demographics2.5 <- function(column, legend.label = quo(column)){
+  
+  ### quo lets you pick out column from dataframe and refer to them
+  ### !! unquotes
+  data_name <- deparse(substitute(column))
+  column <- enquo(column)
+  
+  data_a <- NonGermMulti %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %>%
+    mutate(!!column := as.factor(!!column)) 
+  
+  plot_a <- ggplot(data_a, aes(x = !!column, fill = !!column)) + geom_col(aes(y = percent)) + 
+    theme_classic() + theme(legend.position = "none") + xlab("") + ylab("Percent") + 
+    geom_text(aes(label = paste0(percent, "%"), y = percent), vjust = -0.5) + scale_fill_grey() +
+    theme(axis.text.x = element_text(hjust = 1)) + theme(axis.text = element_text(size = 11), axis.title = element_text(size = 14)) + coord_cartesian(clip = "off")
+  
+  data_b <- NonGermAnglo %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %>%
+    mutate(!!column := as.factor(!!column)) 
+  
+  plot_b <- ggplot(data_b, aes(x = !!column, fill = !!column)) + geom_col(aes(y = percent)) + 
+    theme_classic() + theme(legend.position = "none") + xlab("") + ylab("Percent") + 
+    geom_text(aes(label = paste0(percent, "%"), y = percent), vjust = -0.5) + scale_fill_grey() +
+    theme(axis.text.x = element_text(hjust = 1)) + theme(axis.text = element_text(size = 11), axis.title = element_text(size = 14)) + coord_cartesian(clip = "off")
+  
+  data_c <- German %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %>%
+    mutate(!!column := as.factor(!!column)) 
+  
+  plot_c <- ggplot(data_c, aes(x = !!column, fill = !!column)) + geom_col(aes(y = percent)) + 
+    theme_classic() + theme(legend.position = "none") + xlab("") + ylab("Percent") + 
+    geom_text(aes(label = paste0(percent, "%"), y = percent), vjust = -0.5) + scale_fill_grey() +
+    theme(axis.text.x = element_text( hjust = 1)) + theme(axis.text = element_text(size = 11), axis.title = element_text(size = 14)) + coord_cartesian(clip = "off")
+  
+  data_d <- English %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %>%
+    mutate(!!column := as.factor(!!column)) 
+  
+  plot_d <- ggplot(data_d, aes(x = !!column, fill = !!column)) + geom_col(aes(y = percent)) + 
+    theme_classic() + theme(legend.position = "none") + xlab("") + ylab("Percent") + 
+    geom_text(aes(label = paste0(percent, "%"), y = percent), vjust = -0.5) + scale_fill_grey() +
+    theme(axis.text.x = element_text(hjust = 1)) + theme(axis.text = element_text(size = 11), axis.title = element_text(size = 14)) + coord_cartesian(clip = "off")
+  
+  data_e <- EnglishMulti %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %>%
+    mutate(!!column := as.factor(!!column))
+  
+  plot_e <- ggplot(data_e, aes(x = !!column, fill = !!column)) + geom_col(aes(y = percent)) + 
+    theme_classic() + theme(legend.position = "none") + xlab("") + ylab("Percent") + 
+    geom_text(aes(label = paste0(percent, "%"), y = percent), vjust = -0.5) + scale_fill_grey() +
+    theme(axis.text.x = element_text(hjust = 1)) + theme(axis.text = element_text(size = 11), axis.title = element_text(size = 14)) + coord_cartesian(clip = "off")
+  
+  #    title <- ggdraw() + 
+  #      draw_label(
+  #        legend.label,
+  #        fontface = 'bold',
+  #        x = 0,
+  #        hjust = 0
+  #      ) +
+  #      theme(    plot.margin = margin(0, 0, 0, 7)
+  #      )
+  
+  legend = "A = Non German Multi        B = Non German Anglo      C = German       D = English      E = English Multi"
+  plots <- align_plots(plot_a, plot_b, plot_c, plot_d, plot_e, align = 'v', axis = 'l')
+  top_row <- cowplot::plot_grid(plots[[1]], plots[[2]], plots[[3]], rel_widths = c(1, 1, 1), nrow = 1, labels = c("A", "B", "C"))
+  bottom_row <- cowplot::plot_grid(plots[[4]], plots[[5]], rel_widths = c(1, 1, .3), nrow = 1, labels = c("D", "E"))
+  myplot <- cowplot::plot_grid(top_row, bottom_row, nrow = 2, vjust = -1.2) + theme(plot.margin = unit(c(2,2,2,2), "cm"))
+  #    myplot <- cowplot::plot_grid(plot_a, plot_b, plot_c, plot_d, plot_e, rel_heights = c(0.8, 0.8),
+  #                labels = "AUTO") + theme(plot.margin = unit(c(1,0.5,0.5,0.5), "cm"))
+  ggsave(filename=paste0(data_name, "_bar_", ".png", sep = ""), 
+         plot = myplot, 
+         device = "png", 
+         height = 297, 
+         width = 420, 
+         units = "mm")
+  image <- image_read(paste0(data_name, "_bar_", ".png", sep = ""))
+  annotated <- image_annotate(image, legend.label, size = 95, gravity = "North")
+  annotated2 <- image_annotate(annotated, legend, size = 75, gravity = "South")
+  image_write(annotated2, path = paste0(data_name, "_bar_2", ".png", sep = ""))
+  
+  myplot
+}
+
+Plot_demographics2.5(column = X13b..Please.rate.your.proficiency.in.your.second.language.using.the.scale.below., legend.label = "Second Language Proficiency")
+Plot_demographics2.5(column = X13c..Please.state.how.frequently.you.use.your.second.language.in.an.average.week..0.represents.never..5.is.50..of.the.time.and.10.is.always..,legend.label = "Second Language Use")
+Plot_demographics2.5(column = X14b..Please.rate.your.proficiency.in.your.third.language.using.the.scale.below., legend.label = "Third Language Proficiency")
+Plot_demographics2.5(column = X14c..Please.state.how.frequently.you.use.your.third.language.in.an.average.week..0.represents.never..5.is.50..of.the.time.and.10.is.always.., legend.label = "Third Language Use")
+
+Plot_demographics3 <- function(column, legend.label = quo(column)){
+  
+  ### quo quotes the input but doesn't evaluate it
+  ### !! unquotes
+  data_name <- deparse(substitute(column))
+  column <- enquo(column)
+
+  data_a <- NonGermMulti %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(per=`n`/sum(`n`)) %>% 
+    arrange(desc(!!column))
+  
+    data_a$label <- ceiling(data_a$per*100)
+  
+  plot_a <- ggplot(data_a, aes(x = "", y= per, fill = !!column)) + geom_bar(width = 1, stat = "identity") + coord_polar("y", start = 0) + 
+    theme_void() + geom_label_repel(aes(x = 1.7, cumsum(per) - per/2, label= paste0(label, "%")), color = "white", size = 4.5, point.padding = NA,show.legend = FALSE) + 
+    labs(fill = legend.label) + scale_fill_grey() + theme(legend.title = element_text(size = 20), legend.text =  element_text(size = 18))
+  
+  data_b <- NonGermAnglo %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(per=`n`/sum(`n`)) %>% 
+    arrange(desc(!!column))
+  
+    data_b$label <- ceiling(data_b$per*100)
+  
+  plot_b <- ggplot(data_b, aes(x = "", y= per, fill = !!column)) + geom_bar(width = 1, stat = "identity") + coord_polar("y", start = 0) + 
+    theme_void() + geom_label_repel(aes(x = 1.7, cumsum(per) - per/2, label= paste0(label, "%")), color = "white", size = 4.5, point.padding = NA,show.legend = FALSE) + 
+    labs(fill = legend.label) + scale_fill_grey() + theme(legend.title = element_text(size = 20), legend.text =  element_text(size = 18))
+  
+  data_c <- German %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(per=`n`/sum(`n`)) %>% 
+    arrange(desc(!!column))
+
+    data_c$label <- ceiling(data_c$per*100)
+  
+  plot_c <- ggplot(data_c, aes(x = "", y= per, fill = !!column)) + geom_bar(width = 1, stat = "identity") + coord_polar("y", start = 0) + 
+    theme_void() + geom_label_repel(aes(x = 1.7, cumsum(per) - per/2, label= paste0(label, "%")), color = "white", size = 4.5, point.padding = NA,show.legend = FALSE) + 
+    labs(fill = legend.label) + scale_fill_grey() + theme(legend.title = element_text(size = 20), legend.text =  element_text(size = 18))
+  
+  data_d <- English %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(per=`n`/sum(`n`)) %>% 
+    arrange(desc(!!column))
+  
+    data_d$label <- ceiling(data_d$per*100)
+
+  plot_d <- ggplot(data_d, aes(x = "", y= per, fill = !!column)) + geom_bar(width = 1, stat = "identity") + coord_polar("y", start = 0) + 
+    theme_void() + geom_label_repel(aes(x = 1.7, cumsum(per) - per/2, label= paste0(label, "%")), color = "white", size = 4.5, point.padding = NA,show.legend = FALSE) + 
+    labs(fill = legend.label) + scale_fill_grey() + theme(legend.title = element_text(size = 20), legend.text =  element_text(size = 18))
+  
+  data_e <- EnglishMulti %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(per=`n`/sum(`n`)) %>% 
+    arrange(desc(!!column))
+  
+    data_e$label <- ceiling(data_e$per*100)
+  
+  plot_e <- ggplot(data_e,aes(x = "", y= per, fill = !!column)) + geom_bar(width = 1, stat = "identity") + coord_polar("y", start = 0) + 
+    theme_void() + geom_label_repel(aes(x = 1.7, cumsum(per) - per/2, label= paste0(label, "%")), color = "white", size = 4.5, point.padding = NA,show.legend = FALSE) + 
+    labs(fill = legend.label) + scale_fill_grey() + theme(legend.title = element_text(size = 20), legend.text =  element_text(size = 18))
+  
+  legend = paste("A = Non German Multi        B = Non German Anglo      C = German       D = English      E = English Multi")
+  plots <- align_plots(plot_a, plot_b, plot_c, plot_d, plot_e, align = 'v', axis = 'l')
+  top_row <- cowplot::plot_grid(plots[[1]], plots[[2]], plots[[3]], rel_widths = c(1, 1, 1), nrow = 1, labels = c("A", "B", "C"))
+  bottom_row <- cowplot::plot_grid(plots[[4]], plots[[5]], rel_widths = c(1, 1, .3), nrow = 1, labels = c("D", "E"))
+  myplot <- cowplot::plot_grid(top_row, bottom_row, nrow = 2) + theme(plot.margin = unit(c(1,0.5,0.5,0.5), "cm"))
+  #    myplot <- cowplot::plot_grid(plot_a, plot_b, plot_c, plot_d, plot_e, rel_heights = c(0.8, 0.8),
+  #                labels = "AUTO") + theme(plot.margin = unit(c(1,0.5,0.5,0.5), "cm"))
+  ggsave(filename=paste0(data_name, "_pie_", ".png", sep = ""), 
+         plot = myplot, 
+         device = "png", 
+         height = 297, 
+         width = 420, 
+         units = "mm")
+  image <- image_read(paste0(data_name, "_pie_", ".png", sep = ""))
+  annotated <- image_annotate(image, legend.label, size = 95, gravity = "North")
+  annotated2 <- image_annotate(annotated, legend, size = 75, gravity = "South")
+  image_write(annotated2, path = paste0(data_name, "_pie_2", ".png", sep = ""))
+  
+  myplot
+  
+
+}  
+
+Plot_demographics3(column = X2..What.is.your.gender., legend.label = "Gender")  
+Plot_demographics3(column = X10a..How.many.children.do.you.have..if.at.all., legend.label = "No. of Children")
+Plot_demographics3(X7..Have.you.moved.to.another.country., legend.label = "Live Abroad")
+
+
+
+
+
+Plot_demographics4 <- function(column, legend.label = quo(column)){
+  
+  ### quo quotes the input but doesn't evaluate it
+  ### !! unquotes
+  data_name <- deparse(substitute(column))
+  column <- enquo(column)
+  
+  data_a <- NonGermMulti %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(per=`n`/sum(`n`)) %>% 
+    arrange(desc(!!column))
+  
+  data_a$label <- ceiling(data_a$per*100)
+  
+  plot_a <- ggplot(data_a, aes(x = "", y= per, fill = !!column)) + geom_bar(width = 1, stat = "identity") + coord_polar("y", start = 0) + 
+    theme_void() + geom_label_repel(aes(x = 1.7, cumsum(per) - per/2, label= paste0(label, "%")), color = "white", size = 4.5, point.padding = NA,show.legend = FALSE) + 
+    labs(fill = legend.label) + scale_fill_grey() + theme(legend.title = element_text(size = 20), legend.text =  element_text(size = 18))
+  
+  data_b <- NonGermAnglo %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(per=`n`/sum(`n`)) %>% 
+    arrange(desc(!!column))
+  
+  data_b$label <- ceiling(data_b$per*100)
+  
+  plot_b <- ggplot(data_b, aes(x = "", y= per, fill = !!column)) + geom_bar(width = 1, stat = "identity") + coord_polar("y", start = 0) + 
+    theme_void() + geom_label_repel(aes(x = 1.7, cumsum(per) - per/2, label= paste0(label, "%")), color = "white", size = 4.5, point.padding = NA,show.legend = FALSE) + 
+    labs(fill = legend.label) + scale_fill_grey() + theme(legend.position = "none",legend.title = element_text(size = 20), legend.text =  element_text(size = 18))
+  
+  data_c <- German %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(per=`n`/sum(`n`)) %>% 
+    arrange(desc(!!column))
+  
+  data_c$label <- ceiling(data_c$per*100)
+  
+  plot_c <- ggplot(data_c, aes(x = "", y= per, fill = !!column)) + geom_bar(width = 1, stat = "identity") + coord_polar("y", start = 0) + 
+    theme_void() + geom_label_repel(aes(x = 1.7, cumsum(per) - per/2, label= paste0(label, "%")), color = "white", size = 4.5, point.padding = NA,show.legend = FALSE) + 
+    labs(fill = legend.label) + scale_fill_grey() + theme(legend.position = "none",legend.title = element_text(size = 20), legend.text =  element_text(size = 18))
+  
+  data_d <- English %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(per=`n`/sum(`n`)) %>% 
+    arrange(desc(!!column))
+  
+  data_d$label <- ceiling(data_d$per*100)
+  
+  plot_d <- ggplot(data_d, aes(x = "", y= per, fill = !!column)) + geom_bar(width = 1, stat = "identity") + coord_polar("y", start = 0) + 
+    theme_void() + geom_label_repel(aes(x = 1.7, cumsum(per) - per/2, label= paste0(label, "%")), color = "white", size = 4.5, point.padding = NA,show.legend = FALSE) + 
+    labs(fill = legend.label) + scale_fill_grey() + theme(legend.position = "none",legend.title = element_text(size = 20), legend.text =  element_text(size = 18))
+  
+  data_e <- EnglishMulti %>% 
+    group_by(!!column) %>% 
+    count() %>% 
+    ungroup() %>% 
+    mutate(per=`n`/sum(`n`)) %>% 
+    arrange(desc(!!column))
+  
+  data_e$label <- ceiling(data_e$per*100)
+  
+  plot_e <- ggplot(data_e,aes(x = "", y= per, fill = !!column)) + geom_bar(width = 1, stat = "identity") + coord_polar("y", start = 0) + 
+    theme_void() + geom_label_repel(aes(x = 1.7, cumsum(per) - per/2, label= paste0(label, "%")), color = "white", size = 4.5, point.padding = NA,show.legend = FALSE) + 
+    labs(fill = legend.label) + scale_fill_grey() + theme(legend.position = "none",legend.title = element_text(size = 20), legend.text =  element_text(size = 18))
+  
+  legend = paste("A = Non German Multi        B = Non German Anglo      C = German       D = English      E = English Multi")
+  plots <- align_plots(plot_a, plot_b, plot_c, plot_d, plot_e, align = 'v', axis = 'l')
+  top_row <- cowplot::plot_grid(plots[[1]], plots[[2]], plots[[3]], rel_widths = c(1, 1, 1), nrow = 1, labels = c("A", "B", "C"))
+  bottom_row <- cowplot::plot_grid(plots[[4]], plots[[5]], rel_widths = c(1, 1, .3), nrow = 1, labels = c("D", "E"))
+  myplot <- cowplot::plot_grid(top_row, bottom_row, nrow = 2, cowplot::get_legend(plots[[2]])) + theme(plot.margin = unit(c(1,0.5,0.5,0.5), "cm"))
+  #    myplot <- cowplot::plot_grid(plot_a, plot_b, plot_c, plot_d, plot_e, rel_heights = c(0.8, 0.8),
+  #                labels = "AUTO") + theme(legend.position = "none",plot.margin = unit(c(1,0.5,0.5,0.5), "cm"))
+  ggsave(filename=paste0(data_name, "_pie_", ".png", sep = ""), 
+         plot = myplot, 
+         device = "png", 
+         height = 297, 
+         width = 420, 
+         units = "mm")
+  image <- image_read(paste0(data_name, "_pie_", ".png", sep = ""))
+  annotated <- image_annotate(image, legend.label, size = 95, gravity = "North")
+  annotated2 <- image_annotate(annotated, legend, size = 75, gravity = "South")
+  image_write(annotated2, path = paste0(data_name, "_pie_2", ".png", sep = ""))
+  
+  myplot
+  
+  
+} 
+
+Plot_demographics4(column = X10a..How.many.children.do.you.have..if.at.all., legend.label = "No. of Children")
+Plot_demographics4(X7..Have.you.moved.to.another.country., legend.label = "Live Abroad")
+Plot_demographics4(column = X8..Where.do.you.currently.live., legend.label = "Currently Live")
+Plot_demographics3(column = X8..Where.do.you.currently.live., legend.label = "Currently Live")

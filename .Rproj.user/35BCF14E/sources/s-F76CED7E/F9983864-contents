@@ -1,0 +1,347 @@
+---
+title: "Opening Files"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+
+---
+
+
+<style type="text/css">
+h1.title {text-align: center}
+h1 {text-align: center;
+    color:#FFFAF0;
+    background-color: #708090; 
+    padding: 20px;
+    font-weight:bold;}
+
+body{
+}
+.question{
+  text-align: center;
+              font-weight: 600;
+              margin-bottom: 5px
+}
+.answers {
+  margin-bottom: 20px;
+}
+.answers label{
+  text-align: center;
+  font-weight: normal;
+  display: block;
+}
+#submit{
+              text-align: center;
+              font-family: sans-serif;
+              font-size: 20px;
+              background-color: #279;
+              color: #fff;
+              border: 0px;
+              border-radius: 3px;
+              padding: 20px;
+              cursor: pointer;
+              margin-bottom: 20px;
+}
+#submit:hover{
+              background-color: #38a;
+}
+</style>
+
+# Some possible methods and how to use them
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+\n
+\n
+## Introduction
+
+The aim of this session is to explore some simple ways of reading data files into R.
+There are many packages and functions available for reading in data. I'll introduce two methods that can be used with common file types. Both methods are straightforward to use. 
+
+The package that you use to read files into R really depends on the type of file that you are trying to read in.
+`read.csv()` lets you read in files where columns are separated, for example, by tabs, spaces, or commas. Files you might want to open in this way are those ending in `.txt` and `.csv`.
+
+If you are working with Microsoft Excel files, then using `read_excel` is a nice, simple way of reading in files.
+
+If you are working with more specialist file extensions, you will almost definitely find an available package and documentation to help you work with those files online via a quick Google search.
+
+\n
+\n
+## Working directory
+
+Before thinking about loading files, it is worth considering where you are loading files from.
+
+The working directory is used to tell R where to look for files and where to save them. Knowing your working directory can help you save time when it comes to typing out file names to load into R. For example, if you are loading a file from the working directory, you can simply type the name of the file, rather than having to type out the entire directory path, meaning
+
+`read.csv("file.csv")` versus something more cumbersome like `read.csv("c:/Users/Me/Documents/file.csv")`
+
+To find out your current working directory, type `getwd()` into your console and press return.
+
+To change your working directory, type `setwd()`, making sure to put the new directory inside the brackets. For example, `setwd("/Users/Me/Desktop")`. *Note the quotation marks around the filename -- the file won't be found otherwise.*
+
+\n
+\n
+## `read.csv()` 
+### Reading in `.csv` and `.txt` files.
+
+When you start up R, the `utils` package is automatically loaded, meaning you don't need to do anything. 
+You can use this package to import data stored in the CSV format ("comma-separated values" files, ending .csv) using the `read.csv()` function. 
+
+To use this function, put the name of the file that you want to open inside the brackets `read.csv("put_me_here_please.csv")`. You can put the file name inside single `' '` or double `" "` quotation marks. It doesn't matter which.
+
+You can assign a name to the file that you are reading in by typing `<-`.  
+
+For example typing
+```{r utils}
+file <- read.csv("animaldata.csv")
+```
+
+lets you read in a file called `'animaldata.csv'` (assuming that the file actually exists in your working directory). The file is then available to work with under the name `file`.
+
+The file would look like this:
+```{r, echo = F}
+print(file)
+```
+
+To view the file in R, type `View()`, inserting the name of the file in the brackets, e.g:
+
+`View(file)`
+
+*Note the absence of quotation marks*
+
+\n
+#### Aside
+
+There could be several reasons why a file might not load. One reason is that the file name might contain a typo. Another reason could be that the file extension is not correct. If it is still not loading, try typing out the entire path of the file (it could be that the file isn't in your working directory), making sure to use forward slashes (`/`) and not back slashes (`\`).
+
+E.g. `read.csv("c:/Users/SteveIrwin/Documents/animaldata.csv")`
+
+### Additional parameters for `read.csv()`
+
+##### <u>Reading in non comma separated files</u>
+
+However, it is not just possible to open `.csv` files. If your data are stored in `.txt` files, these can also be accessed using the `read.csv()` function. To do this, you simply have to adjust the `sep` parameter when opening the file.
+
+If you are opening a file and your columns are separated by tabs, for example, you just need to add `sep = "\t"` when opening the file. For data separated by spaces/whitespace, simply add `sep = ""` instead. The default `sep` setting is `,`, so you don't need to type anything for it if reading in a comma separated file, as was shown above.
+
+
+```{r, echo=T}
+read.csv("animaldata2.txt", sep = "\t")
+```
+```{r echo = F}
+file2 <- read.csv("animaldata2.txt", sep = "\t")
+str(file2)
+```
+
+The structure of the data can be obtained by typing `str(file)`, where `file` is replaced by whatever you called your data. By typing this you can see whether R has read your data in as characters (`chr`), numbers (e.g. `int` or `num`) or factors (`Factor`), for example. 
+
+##### <u>Setting strings as factors</u>
+
+With `stringsAsFactors`, you can tell R whether it should convert strings (characters/letters or combinations of letters and numbers, e.g. 'cat' 'File001') to factors. `stringsAsFactors` used to be set to `TRUE` by default, but it now appears to be set to `FALSE`.
+
+If you wish to read in strings as factors, simply add ```stringsAsFactors = TRUE``` after the name of the file that you are reading in, like so: 
+
+```{r}
+file3 <- read.csv('animaldata2.txt', sep = "\t", stringsAsFactors = TRUE)
+```
+```{r}
+str(file3)
+```
+
+As you can see, where `Animal` and `Name` were read in as strings earlier, by typing `stringsAsFactors = TRUE`, they are now read in as factors.
+
+##### <u>Setting NA values</u>
+
+An additional parameter that might come in handy is `na.strings`. By default, `read.csv()` takes "NA" to stand for NA values in the dataset. However, it is possible that you may have coded your data differently, so that maybe '0', 'na' or 'N/A', for example are used to represent NA values. You can specify this using the `na.strings` parameter, typing, for example
+
+```{r}
+file4 <- read.csv('animaldata2.txt', sep = "\t", na.strings = "Crocodile")
+str(file4)
+```
+```{r}
+file5 <- read.csv('animaldata2.txt', sep = "\t", na.strings = c("Crocodile", "Tony", "Gerald", "3"))
+str(file5)
+```
+##### <u>Don't use the first line as headings</u>
+
+By default, `read.csv()` will read the first line of your file in as headings. If your data does not include headings, you can prevent this by typing `header = FALSE`. 
+
+```{R}
+file6 <- read.csv('animaldata3.txt', sep = "\t", header = FALSE)
+file6
+```
+
+*In the example above, no column names were provided. The first row of the file contained only data. Having set `header` to `FALSE`, R has automatically supplied `V1`, `V2` etc. as headings.*
+
+##### <u>Trim whitespace</u>
+
+A very useful parameter that can be used is `strip.white`. By setting `strip.white` to `TRUE` you can remove leading and trailing spaces. If you do this, then `'Tiger'`, `' Tiger'` and `'Tiger '` will all be read in as `'Tiger'`, rather than three separate names -- something you probably don't want. 
+
+E.g. `spaceless <- read.csv("animaldata.csv", strip.white = TRUE)`
+
+\n
+\n
+### The codeless way
+
+However, there is another simple method for reading in csv/txt files, in a very user friendly manner. In RStudio, you can click `file` -> `Import Dataset` -> `From Text (base)`. This lets you search through your files to select the relevant one. You can choose then choose a name to give to the file and you are presented with multiple parameters which you can adjust as you need to.
+
+
+\n
+\n
+\n
+## `read_excel()` 
+### Reading in Excel files
+
+One package you can use to import Excel files is `readxl`. One small caveat: *It can only read one sheet a time. If you need to work on multiple sheets, they will each need to be loaded as objects.
+
+To read in an Excel file, you first need to load the `readxl` package, by typing the following into the console:
+
+`library(readxl)` unless you have already loaded the `tidyverse` package.
+
+*If you don't have `tidyverse` or `readxl` packages available, these can be obtained by typing
+`install.packages('tidyverse')` or `install.packages('readxl')` respectively.
+
+Following this, you can read in the file by typing `read_excel()`, with the name of the file surrounded by quotation mark placed inside the brackets, as can be seen in the example below:
+
+`dataset <- read_excel("Im_a_little_dataset_short_and_stout.xlsx")`
+
+### Additional parameters for `read_excel()`
+
+##### <u>Sheet selection</u>
+
+If you have Excel spreadsheets that span several sheets, you can select a sheet by number using the `sheet` parameter. For example, typing
+
+`dataset_sheet2 <- read_excel("Im_a_little_dataset_short_and_stout.xlsx", sheet = 2)`
+
+would extract the data from the second sheet of the spreadsheet and assign it to the name `dataset_sheet2`.
+
+##### <u>Trim whitespace</u>
+
+Another potentially useful parameter that is set to `TRUE` by default is `trim_ws`. This removes leading and trailing spaces. What this means in practice is that `'John'`, `' John'` and `'John '` would all be read in as `'John'`, which is incredibly useful, especially if you can't see that you added a space at the end of a variable. When it comes to conducting analyses, if it weren't for the trimming of whitespace, the three Johns would count as separate variables, rather than one, which is probably not what you would want. If for some reason, you need to keep this whitespace, add `trim_ws = FALSE`, when reading in the file (e.g. `dataset <- read_excel("Im_a_little_dataset_short_and_stout.xlsx, trim_ws = FALSE")`)
+
+##### <u>Setting NA values</u>
+
+As with `read.csv()`, you can set NA to be whatever you choose, in this case using the `na` parameter. The default value for NA in `read_excel()` is a blank cell. You could add 'na', 'NA', '0', or any variable or your choosing by typing something like
+
+`dataset_sheet2 <- read_excel("Im_a_little_dataset_short_and_stout.xlsx", sheet = 2, na = c("", "na", "NA", "woof woof"))`
+
+### The codeless way
+
+As for `read.csv`, there is a very simple and codeless way of reading in Excel files. In RStudio, you can click `file` -> `Import Dataset` -> `From Excel..`. You can then search for the file you want. You are also presented with multiple parameters that you can adjust as you wish.
+
+
+<div id="quiz"></div>
+<button id="submit">Submit Answers</button>
+<div id="results"></div>
+
+```{js echo = F}
+const quizContainer = document.getElementById('quiz');
+const resultsContainer = document.getElementById('results');
+const submitButton = document.getElementById('submit');
+const myQuestions = [
+  {
+    question: "Who invented JavaScript?",
+    answers: {
+     a: "Douglas Crockford",
+      b: "Sheryl Sandberg",
+      c: "Brendan Eich"
+    },
+    correctAnswer: "c"
+  },
+  {
+    question: "Which one of these is a JavaScript package manager?",
+    answers: {
+      a: "Node.js",
+      b: "TypeScript",
+      c: "npm"
+    },
+    correctAnswer: "c"
+  },
+  {
+    question: "Which tool can you use to ensure code quality?",
+    answers: {
+      a: "Angular",
+      b: "jQuery",
+      c: "RequireJS",
+      d: "ESLint"
+    },
+    correctAnswer: "d"
+  }
+];
+
+function buildQuiz(){  // variable to store the HTML output
+  const output = [];
+
+  // for each question...
+  myQuestions.forEach(
+    (currentQuestion, questionNumber) => {
+
+      // variable to store the list of possible answers
+      const answers = [];
+
+      // and for each available answer...
+      for(letter in currentQuestion.answers){
+
+        // ...add an HTML radio button
+        answers.push(
+          `<label>
+            <input type="radio" name="question${questionNumber}" value="${letter}">
+           ${letter} :
+            ${currentQuestion.answers[letter]}
+          </label>`
+        );
+      }
+
+      // add this question and its answers to the output
+      output.push(
+        `<div class="question"> ${currentQuestion.question} </div>
+        <div class="answers"> ${answers.join('')} </div>`
+      );
+    }
+  );
+
+  // finally combine our output list into one string of HTML and put it on the page
+  quizContainer.innerHTML = output.join('');
+}
+
+function showResults(){  // gather answer containers from our quiz
+  const answerContainers = quizContainer.querySelectorAll('.answers');
+
+  // keep track of user's answers
+  let numCorrect = 0;
+
+  // for each question...
+  myQuestions.forEach( (currentQuestion, questionNumber) => {
+
+    // find selected answer
+    const answerContainer = answerContainers[questionNumber];
+    const selector = `input[name=question${questionNumber}]:checked`;
+    const userAnswer = (answerContainer.querySelector(selector) || {}).value;
+
+    // if answer is correct
+    if(userAnswer === currentQuestion.correctAnswer){
+      // add to the number of correct answers
+      numCorrect++;
+
+      // color the answers green
+      answerContainers[questionNumber].style.color = 'lightgreen';
+    }
+    // if answer is wrong or blank
+    else{
+      // color the answers red
+      answerContainers[questionNumber].style.color = 'red';
+    }
+  });
+
+  // show number of correct answers out of total
+  resultsContainer.innerHTML = `${numCorrect} out of ${myQuestions.length}`;
+}
+
+// display quiz right away
+buildQuiz();
+
+// on submit, show results
+submitButton.addEventListener('click', showResults);
+```

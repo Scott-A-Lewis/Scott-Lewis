@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1599050064086.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "169D61FF",
+    "lastKnownWriteTime" : 1599122870,
+    "last_content_update" : 1599122870649,
+    "path" : "C:/Users/2011s/Desktop/Esther data - Bilingual Children/Make images.R",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "206,59",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 9,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

@@ -1,0 +1,33 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1599041977001.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "5553F03C",
+    "lastKnownWriteTime" : 19140599068622901,
+    "last_content_update" : 1599041977001,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "8D6BEE0C",
+        "caption" : "multilangparents",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=multilangparents&cache_key=8D6BEE0C",
+        "displayedObservations" : "722",
+        "environment" : "",
+        "expression" : "multilangparents",
+        "object" : "multilangparents",
+        "preview" : "0",
+        "totalObservations" : "722",
+        "variables" : "76"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 9,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

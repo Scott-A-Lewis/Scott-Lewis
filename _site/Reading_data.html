@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Opening Files</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/paper.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/ionicons-2.0.1/css/ionicons.min.css" rel="stylesheet" />
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 64px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h2 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h3 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h4 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h5 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h6 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Scott Lewis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="Reading_data.html">Reading data</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    <span class="ion ion-icon name=&quot;cellular-outline&quot;"></span>
+     
+    Plotting
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Plotting_file.html">Barplots</a>
+    </li>
+    <li>
+      <a href="Plot_plotly.html">Barplot using ggplotly</a>
+    </li>
+    <li>
+      <a href="Plotly_subset.html">Plotting subsetted data</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Opening Files</h1>
+
+</div>
+
+
+<style type="text/css">
+h1.title {text-align: center}
+h1 {text-align: center;
+    color:#FFFAF0;
+    background-color: #708090; 
+    padding: 20px;
+    font-weight:bold;}
+
+body{
+}
+.question{
+  text-align: center;
+              font-weight: 600;
+              margin-bottom: 5px
+}
+.answers {
+  margin-bottom: 20px;
+}
+.answers label{
+  text-align: center;
+  font-weight: normal;
+  display: block;
+}
+#submit{
+              text-align: center;
+              font-family: sans-serif;
+              font-size: 20px;
+              background-color: #279;
+              color: #fff;
+              border: 0px;
+              border-radius: 3px;
+              padding: 20px;
+              cursor: pointer;
+              margin-bottom: 20px;
+}
+#submit:hover{
+              background-color: #38a;
+}
+</style>
+<div id="some-possible-methods-and-how-to-use-them" class="section level1">
+<h1>Some possible methods and how to use them</h1>
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>The aim of this session is to explore some simple ways of reading data files into R. There are many packages and functions available for reading in data. I’ll introduce two methods that can be used with common file types. Both methods are straightforward to use.</p>
+<p>The package that you use to read files into R really depends on the type of file that you are trying to read in. <code>read.csv()</code> lets you read in files where columns are separated, for example, by tabs, spaces, or commas. Files you might want to open in this way are those ending in <code>.txt</code> and <code>.csv</code>.</p>
+<p>If you are working with Microsoft Excel files, then using <code>read_excel</code> is a nice, simple way of reading in files.</p>
+<p>If you are working with more specialist file extensions, you will almost definitely find an available package and documentation to help you work with those files online via a quick Google search.</p>
+
+</div>
+<div id="working-directory" class="section level2">
+<h2>Working directory</h2>
+<p>Before thinking about loading files, it is worth considering where you are loading files from.</p>
+<p>The working directory is used to tell R where to look for files and where to save them. Knowing your working directory can help you save time when it comes to typing out file names to load into R. For example, if you are loading a file from the working directory, you can simply type the name of the file, rather than having to type out the entire directory path, meaning</p>
+<p><code>read.csv("file.csv")</code> versus something more cumbersome like <code>read.csv("c:/Users/Me/Documents/file.csv")</code></p>
+<p>To find out your current working directory, type <code>getwd()</code> into your console and press return.</p>
+<p>To change your working directory, type <code>setwd()</code>, making sure to put the new directory inside the brackets. For example, <code>setwd("/Users/Me/Desktop")</code>. <em>Note the quotation marks around the filename – the file won’t be found otherwise.</em></p>
+
+</div>
+<div id="read.csv" class="section level2">
+<h2><code>read.csv()</code></h2>
+<div id="reading-in-.csv-and-.txt-files." class="section level3">
+<h3>Reading in <code>.csv</code> and <code>.txt</code> files.</h3>
+<p>When you start up R, the <code>utils</code> package is automatically loaded, meaning you don’t need to do anything. You can use this package to import data stored in the CSV format (“comma-separated values” files, ending .csv) using the <code>read.csv()</code> function.</p>
+<p>To use this function, put the name of the file that you want to open inside the brackets <code>read.csv("put_me_here_please.csv")</code>. You can put the file name inside single <code>' '</code> or double <code>" "</code> quotation marks. It doesn’t matter which.</p>
+<p>You can assign a name to the file that you are reading in by typing <code>&lt;-</code>.</p>
+<p>For example typing</p>
+<pre class="r"><code>file &lt;- read.csv(&quot;animaldata.csv&quot;)</code></pre>
+<p>lets you read in a file called <code>'animaldata.csv'</code> (assuming that the file actually exists in your working directory). The file is then available to work with under the name <code>file</code>.</p>
+<p>The file would look like this:</p>
+<pre><code>##      Animal    Name Age Anger
+## 1     Tiger    Tony  60     3
+## 2   Giraffe  Gerald  10     1
+## 3     Mouse   Miles   4    10
+## 4 Crocodile Kenneth   3     8
+## 5  Elephant   Dumbo   3     3</code></pre>
+<p>To view the file in R, type <code>View()</code>, inserting the name of the file in the brackets, e.g:</p>
+<p><code>View(file)</code></p>
+<p><em>Note the absence of quotation marks</em></p>
+
+<div id="aside" class="section level4">
+<h4>Aside</h4>
+<p>There could be several reasons why a file might not load. One reason is that the file name might contain a typo. Another reason could be that the file extension is not correct. If it is still not loading, try typing out the entire path of the file (it could be that the file isn’t in your working directory), making sure to use forward slashes (<code>/</code>) and not back slashes (<code>\</code>).</p>
+<p>E.g. <code>read.csv("c:/Users/SteveIrwin/Documents/animaldata.csv")</code></p>
+</div>
+</div>
+<div id="additional-parameters-for-read.csv" class="section level3">
+<h3>Additional parameters for <code>read.csv()</code></h3>
+<div id="reading-in-non-comma-separated-files" class="section level5">
+<h5><u>Reading in non comma separated files</u></h5>
+<p>However, it is not just possible to open <code>.csv</code> files. If your data are stored in <code>.txt</code> files, these can also be accessed using the <code>read.csv()</code> function. To do this, you simply have to adjust the <code>sep</code> parameter when opening the file.</p>
+<p>If you are opening a file and your columns are separated by tabs, for example, you just need to add <code>sep = "\t"</code> when opening the file. For data separated by spaces/whitespace, simply add <code>sep = ""</code> instead. The default <code>sep</code> setting is <code>,</code>, so you don’t need to type anything for it if reading in a comma separated file, as was shown above.</p>
+<pre class="r"><code>read.csv(&quot;animaldata2.txt&quot;, sep = &quot;\t&quot;)</code></pre>
+<pre><code>##      Animal    Name Age Anger
+## 1     Tiger    Tony  60   3.0
+## 2   Giraffe  Gerald  10   1.1
+## 3     Mouse   Miles   4  10.0
+## 4 Crocodile Kenneth   3   8.0
+## 5  Elephant   Dumbo   3   3.0</code></pre>
+<pre><code>## &#39;data.frame&#39;:    5 obs. of  4 variables:
+##  $ Animal: Factor w/ 5 levels &quot;Crocodile&quot;,&quot;Elephant&quot;,..: 5 3 4 1 2
+##  $ Name  : Factor w/ 5 levels &quot;Dumbo&quot;,&quot;Gerald&quot;,..: 5 2 4 3 1
+##  $ Age   : int  60 10 4 3 3
+##  $ Anger : num  3 1.1 10 8 3</code></pre>
+<p>The structure of the data can be obtained by typing <code>str(file)</code>, where <code>file</code> is replaced by whatever you called your data. By typing this you can see whether R has read your data in as characters (<code>chr</code>), numbers (e.g. <code>int</code> or <code>num</code>) or factors (<code>Factor</code>), for example.</p>
+</div>
+<div id="setting-strings-as-factors" class="section level5">
+<h5><u>Setting strings as factors</u></h5>
+<p>With <code>stringsAsFactors</code>, you can tell R whether it should convert strings (characters/letters or combinations of letters and numbers, e.g. ‘cat’ ‘File001’) to factors. <code>stringsAsFactors</code> used to be set to <code>TRUE</code> by default, but it now appears to be set to <code>FALSE</code>.</p>
+<p>If you wish to read in strings as factors, simply add <code>stringsAsFactors = TRUE</code> after the name of the file that you are reading in, like so:</p>
+<pre class="r"><code>file3 &lt;- read.csv(&#39;animaldata2.txt&#39;, sep = &quot;\t&quot;, stringsAsFactors = TRUE)</code></pre>
+<pre class="r"><code>str(file3)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    5 obs. of  4 variables:
+##  $ Animal: Factor w/ 5 levels &quot;Crocodile&quot;,&quot;Elephant&quot;,..: 5 3 4 1 2
+##  $ Name  : Factor w/ 5 levels &quot;Dumbo&quot;,&quot;Gerald&quot;,..: 5 2 4 3 1
+##  $ Age   : int  60 10 4 3 3
+##  $ Anger : num  3 1.1 10 8 3</code></pre>
+<p>As you can see, where <code>Animal</code> and <code>Name</code> were read in as strings earlier, by typing <code>stringsAsFactors = TRUE</code>, they are now read in as factors.</p>
+</div>
+<div id="setting-na-values" class="section level5">
+<h5><u>Setting NA values</u></h5>
+<p>An additional parameter that might come in handy is <code>na.strings</code>. By default, <code>read.csv()</code> takes “NA” to stand for NA values in the dataset. However, it is possible that you may have coded your data differently, so that maybe ‘0’, ‘na’ or ‘N/A’, for example are used to represent NA values. You can specify this using the <code>na.strings</code> parameter, typing, for example</p>
+<pre class="r"><code>file4 &lt;- read.csv(&#39;animaldata2.txt&#39;, sep = &quot;\t&quot;, na.strings = &quot;Crocodile&quot;)
+str(file4)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    5 obs. of  4 variables:
+##  $ Animal: Factor w/ 4 levels &quot;Elephant&quot;,&quot;Giraffe&quot;,..: 4 2 3 NA 1
+##  $ Name  : Factor w/ 5 levels &quot;Dumbo&quot;,&quot;Gerald&quot;,..: 5 2 4 3 1
+##  $ Age   : int  60 10 4 3 3
+##  $ Anger : num  3 1.1 10 8 3</code></pre>
+<pre class="r"><code>file5 &lt;- read.csv(&#39;animaldata2.txt&#39;, sep = &quot;\t&quot;, na.strings = c(&quot;Crocodile&quot;, &quot;Tony&quot;, &quot;Gerald&quot;, &quot;3&quot;))
+str(file5)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    5 obs. of  4 variables:
+##  $ Animal: Factor w/ 4 levels &quot;Elephant&quot;,&quot;Giraffe&quot;,..: 4 2 3 NA 1
+##  $ Name  : Factor w/ 3 levels &quot;Dumbo&quot;,&quot;Kenneth&quot;,..: NA NA 3 2 1
+##  $ Age   : int  60 10 4 NA NA
+##  $ Anger : num  NA 1.1 10 8 NA</code></pre>
+</div>
+<div id="dont-use-the-first-line-as-headings" class="section level5">
+<h5><u>Don’t use the first line as headings</u></h5>
+<p>By default, <code>read.csv()</code> will read the first line of your file in as headings. If your data does not include headings, you can prevent this by typing <code>header = FALSE</code>.</p>
+<pre class="r"><code>file6 &lt;- read.csv(&#39;animaldata3.txt&#39;, sep = &quot;\t&quot;, header = FALSE)
+file6</code></pre>
+<pre><code>##          V1      V2 V3   V4
+## 1     Tiger    Tony 60  3.0
+## 2   Giraffe  Gerald 10  1.1
+## 3     Mouse   Miles  4 10.0
+## 4 Crocodile Kenneth  3  8.0
+## 5  Elephant   Dumbo  3  3.0</code></pre>
+<p><em>In the example above, no column names were provided. The first row of the file contained only data. Having set <code>header</code> to <code>FALSE</code>, R has automatically supplied <code>V1</code>, <code>V2</code> etc. as headings.</em></p>
+</div>
+<div id="trim-whitespace" class="section level5">
+<h5><u>Trim whitespace</u></h5>
+<p>A very useful parameter that can be used is <code>strip.white</code>. By setting <code>strip.white</code> to <code>TRUE</code> you can remove leading and trailing spaces. If you do this, then <code>'Tiger'</code>, <code>' Tiger'</code> and <code>'Tiger '</code> will all be read in as <code>'Tiger'</code>, rather than three separate names – something you probably don’t want.</p>
+<p>E.g. <code>spaceless &lt;- read.csv("animaldata.csv", strip.white = TRUE)</code></p>
+
+</div>
+</div>
+<div id="the-codeless-way" class="section level3">
+<h3>The codeless way</h3>
+<p>However, there is another simple method for reading in csv/txt files, in a very user friendly manner. In RStudio, you can click <code>file</code> -&gt; <code>Import Dataset</code> -&gt; <code>From Text (base)</code>. This lets you search through your files to select the relevant one. You can choose then choose a name to give to the file and you are presented with multiple parameters which you can adjust as you need to.</p>
+
+</div>
+</div>
+<div id="read_excel" class="section level2">
+<h2><code>read_excel()</code></h2>
+<div id="reading-in-excel-files" class="section level3">
+<h3>Reading in Excel files</h3>
+<p>One package you can use to import Excel files is <code>readxl</code>. One small caveat: *It can only read one sheet a time. If you need to work on multiple sheets, they will each need to be loaded as objects.</p>
+<p>To read in an Excel file, you first need to load the <code>readxl</code> package, by typing the following into the console:</p>
+<p><code>library(readxl)</code> unless you have already loaded the <code>tidyverse</code> package.</p>
+<p>*If you don’t have <code>tidyverse</code> or <code>readxl</code> packages available, these can be obtained by typing <code>install.packages('tidyverse')</code> or <code>install.packages('readxl')</code> respectively.</p>
+<p>Following this, you can read in the file by typing <code>read_excel()</code>, with the name of the file surrounded by quotation mark placed inside the brackets, as can be seen in the example below:</p>
+<p><code>dataset &lt;- read_excel("Im_a_little_dataset_short_and_stout.xlsx")</code></p>
+</div>
+<div id="additional-parameters-for-read_excel" class="section level3">
+<h3>Additional parameters for <code>read_excel()</code></h3>
+<div id="sheet-selection" class="section level5">
+<h5><u>Sheet selection</u></h5>
+<p>If you have Excel spreadsheets that span several sheets, you can select a sheet by number using the <code>sheet</code> parameter. For example, typing</p>
+<p><code>dataset_sheet2 &lt;- read_excel("Im_a_little_dataset_short_and_stout.xlsx", sheet = 2)</code></p>
+<p>would extract the data from the second sheet of the spreadsheet and assign it to the name <code>dataset_sheet2</code>.</p>
+</div>
+<div id="trim-whitespace-1" class="section level5">
+<h5><u>Trim whitespace</u></h5>
+<p>Another potentially useful parameter that is set to <code>TRUE</code> by default is <code>trim_ws</code>. This removes leading and trailing spaces. What this means in practice is that <code>'John'</code>, <code>' John'</code> and <code>'John '</code> would all be read in as <code>'John'</code>, which is incredibly useful, especially if you can’t see that you added a space at the end of a variable. When it comes to conducting analyses, if it weren’t for the trimming of whitespace, the three Johns would count as separate variables, rather than one, which is probably not what you would want. If for some reason, you need to keep this whitespace, add <code>trim_ws = FALSE</code>, when reading in the file (e.g. <code>dataset &lt;- read_excel("Im_a_little_dataset_short_and_stout.xlsx, trim_ws = FALSE")</code>)</p>
+</div>
+<div id="setting-na-values-1" class="section level5">
+<h5><u>Setting NA values</u></h5>
+<p>As with <code>read.csv()</code>, you can set NA to be whatever you choose, in this case using the <code>na</code> parameter. The default value for NA in <code>read_excel()</code> is a blank cell. You could add ‘na’, ‘NA’, ‘0’, or any variable or your choosing by typing something like</p>
+<p><code>dataset_sheet2 &lt;- read_excel("Im_a_little_dataset_short_and_stout.xlsx", sheet = 2, na = c("", "na", "NA", "woof woof"))</code></p>
+</div>
+</div>
+<div id="the-codeless-way-1" class="section level3">
+<h3>The codeless way</h3>
+<p>As for <code>read.csv</code>, there is a very simple and codeless way of reading in Excel files. In RStudio, you can click <code>file</code> -&gt; <code>Import Dataset</code> -&gt; <code>From Excel..</code>. You can then search for the file you want. You are also presented with multiple parameters that you can adjust as you wish.</p>
+<div id="quiz">
+
+</div>
+<button id="submit">
+Submit Answers
+</button>
+<div id="results">
+
+</div>
+<script type="text/javascript">
+const quizContainer = document.getElementById('quiz');
+const resultsContainer = document.getElementById('results');
+const submitButton = document.getElementById('submit');
+const myQuestions = [
+  {
+    question: "Who invented JavaScript?",
+    answers: {
+     a: "Douglas Crockford",
+      b: "Sheryl Sandberg",
+      c: "Brendan Eich"
+    },
+    correctAnswer: "c"
+  },
+  {
+    question: "Which one of these is a JavaScript package manager?",
+    answers: {
+      a: "Node.js",
+      b: "TypeScript",
+      c: "npm"
+    },
+    correctAnswer: "c"
+  },
+  {
+    question: "Which tool can you use to ensure code quality?",
+    answers: {
+      a: "Angular",
+      b: "jQuery",
+      c: "RequireJS",
+      d: "ESLint"
+    },
+    correctAnswer: "d"
+  }
+];
+
+function buildQuiz(){  // variable to store the HTML output
+  const output = [];
+
+  // for each question...
+  myQuestions.forEach(
+    (currentQuestion, questionNumber) => {
+
+      // variable to store the list of possible answers
+      const answers = [];
+
+      // and for each available answer...
+      for(letter in currentQuestion.answers){
+
+        // ...add an HTML radio button
+        answers.push(
+          `<label>
+            <input type="radio" name="question${questionNumber}" value="${letter}">
+           ${letter} :
+            ${currentQuestion.answers[letter]}
+          </label>`
+        );
+      }
+
+      // add this question and its answers to the output
+      output.push(
+        `<div class="question"> ${currentQuestion.question} </div>
+        <div class="answers"> ${answers.join('')} </div>`
+      );
+    }
+  );
+
+  // finally combine our output list into one string of HTML and put it on the page
+  quizContainer.innerHTML = output.join('');
+}
+
+function showResults(){  // gather answer containers from our quiz
+  const answerContainers = quizContainer.querySelectorAll('.answers');
+
+  // keep track of user's answers
+  let numCorrect = 0;
+
+  // for each question...
+  myQuestions.forEach( (currentQuestion, questionNumber) => {
+
+    // find selected answer
+    const answerContainer = answerContainers[questionNumber];
+    const selector = `input[name=question${questionNumber}]:checked`;
+    const userAnswer = (answerContainer.querySelector(selector) || {}).value;
+
+    // if answer is correct
+    if(userAnswer === currentQuestion.correctAnswer){
+      // add to the number of correct answers
+      numCorrect++;
+
+      // color the answers green
+      answerContainers[questionNumber].style.color = 'lightgreen';
+    }
+    // if answer is wrong or blank
+    else{
+      // color the answers red
+      answerContainers[questionNumber].style.color = 'red';
+    }
+  });
+
+  // show number of correct answers out of total
+  resultsContainer.innerHTML = `${numCorrect} out of ${myQuestions.length}`;
+}
+
+// display quiz right away
+buildQuiz();
+
+// on submit, show results
+submitButton.addEventListener('click', showResults);
+</script>
+</div>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

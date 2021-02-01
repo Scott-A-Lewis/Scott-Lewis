@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1612178743110.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "F9983864",
+    "lastKnownWriteTime" : 1612178844,
+    "last_content_update" : 1612178845003,
+    "path" : "~/GitHub/Scott-Lewis/Reading_data.Rmd",
+    "project_path" : "Reading_data.Rmd",
+    "properties" : {
+        "cursorPosition" : "338,76",
+        "scrollLine" : "315",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 11,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1597327392161.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "8A5C5FFD",
+    "lastKnownWriteTime" : 1599138485,
+    "last_content_update" : 1599138485924,
+    "path" : "C:/Users/2011s/Desktop/Esther data - Bilingual Children/Bilingual children script.R",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "591,0",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

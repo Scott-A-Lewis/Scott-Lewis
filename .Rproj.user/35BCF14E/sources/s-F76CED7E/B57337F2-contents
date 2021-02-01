@@ -1,0 +1,179 @@
+---
+title: "Plotting example"
+output: html_document
+---
+  
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{css, echo = FALSE}
+h1, h2, h3, h4 {text-align: center;}
+h1  {color:#FFFAF0;
+    background-color: #708090; 
+    padding: 20px;
+  font-weight:bold;}
+h4 {background-color: #A52A2A;
+    color:#FFFAF0;
+    padding: 12px}
+```
+
+## The plots below show the kind of thing that could be plotted on a webpage
+Hi Esther, I've created a couple of example plots using the real data to show what could be plotted online, if that's a route you wanted to go down. There are dropdown menus so the reader can look at columns of interest, rather than looking at multiple charts at the same time.
+<br> Hovering over the bars gives you more information.
+<br> The pie chart for all the participants is a bit of a mess. However, when you looked at the subsetted data, it is cleaner. Still, it isn't as clean as the barplot.
+<p>
+
+
+  
+```{r echo= F}
+multilangparents <- read.csv("C:/Users/2011s/Desktop/Esther data - Bilingual Children/Esther_data_children/multilangparents.csv")
+```
+
+```{r echo=FALSE, message=FALSE}
+library(ggplot2)
+library(dplyr)
+library(ellipsis)
+library(plotly)
+library(gridExtra)
+
+```
+<center>
+```{r echo=FALSE, warning=FALSE}
+plot_column <- function(data, column, legend.label = quo(column), groupname){
+  ###This function requires the following packages: dplyr, ggplot2 and plotly.
+  
+  ## enquo captures expressions that you supply, in this case the column name.
+  column <- enquo(column)
+  groupname <- enquo(groupname)
+  
+  m <- list(l = 50, r = 50, b = 75, t = 75, pad = 6)
+
+  data2 <- data %>% 
+    ##!! unquotes
+    group_by(!!column, !!groupname) %>% 
+    count() %>%
+    ungroup() %>% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %>%
+    group_by(!!groupname, add = T) %>% 
+#    mutate(group_percent = paste0(ceiling(100*count/count, 2), "%")) %>% 
+    mutate(group_percent = ceiling(`n`/sum(`n`)*100)) %>% 
+    ungroup() %>% 
+#    mutate(percent_nongermmulti = ceiling(100*(`n`/sum(`n`))) if {!!groupname == "NonGermMulti"}) %>% 
+    mutate(column := as.factor(!!column)) %>% 
+    mutate(groupname := as.factor(!!groupname)) %>% 
+    select(column, group_percent, percent, `n`, groupname)
+
+  p <- plot_ly(data = data2, x = ~column, y=~percent, type = "bar", visible = T, showlegend = FALSE, hoverinfo = "text", text = ~paste("Group:", groupname, "</br></br></br>", column, "</br></br>", percent, "%"), xaxis = list(title = legend.label), yaxis = list(title = "Percent")) %>% layout(xaxis = list(title = legend.label), yaxis=list(title = "Percent")) %>% 
+    add_trace(data = subset(data2, groupname == "NonGermMulti"), y = ~group_percent, visible = F, hoverinfo = "text", text = ~paste("Group:", groupname, "</br></br></br>", column, "</br></br>", group_percent, "%")) %>%
+    add_trace(data = subset(data2, groupname == "NonGermAnglo"), y = ~group_percent, visible = F, hoverinfo = "text", text = ~paste("Group:", groupname, "</br></br></br>", column, "</br></br>", group_percent, "%")) %>%
+    add_trace(data = subset(data2, groupname == "German"), y = ~group_percent, visible = F, hoverinfo = "text", text = ~paste("Group:", groupname, "</br></br></br>", column, "</br></br>", group_percent, "%")) %>%
+    add_trace(data = subset(data2, groupname == "English"), y = ~group_percent, visible = F, hoverinfo = "text", text = ~paste("Group:", groupname, "</br></br></br>", column, "</br></br>", group_percent, "%")) %>%
+    add_trace(data = subset(data2, groupname == "EnglishMulti"), y = ~group_percent, visible = F, hoverinfo = "text", text = ~paste("Group:", groupname, "</br></br></br>", column, "</br></br>", group_percent, "%")) %>%
+    layout(autosize = F, margin = m) %>% 
+
+    layout(title = legend.label,
+      updatemenus = list(
+        list(
+          type = 'dropdown',
+          active = 0,
+          x = -0.12,
+#          xanchor = 'left',
+          buttons = list(
+  list(method = "restyle",
+       args = list("visible", list(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE)),
+       label = "All"),
+  list(method = "restyle",
+       args = list("visible", list(FALSE, TRUE, FALSE, FALSE, FALSE, FALSE)),
+       label = "NonGermMulti"),
+  list(method = "restyle",
+       args = list("visible", list(FALSE, FALSE, TRUE, FALSE, FALSE, FALSE)),
+       label = "NonGermAnglo"),
+  list(method = "restyle",
+       args = list("visible", list(FALSE, FALSE, FALSE, TRUE, FALSE, FALSE)),
+       label = "German"),
+  list(method = "restyle",
+       args = list("visible", list(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE)),
+       label = "English"), 
+  list(method = "restyle",
+       args = list("visible", list(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE)),
+       label = "EnglishMulti")))))
+  p
+
+}
+```
+```{r echo=FALSE}
+#p1 <- plot_column(fake_data, column = X.1.What.Is.Your.Age., legend.label = "Age", groupname = NA)
+p2 <- plot_column(multilangparents, column = X1..What.is.your.age., legend.label = "Age", groupname = group)
+p2
+```
+</center>
+```{r echo=FALSE, warning=FALSE}
+plot_pie_2 <- function(data, column, legend.label = quo(column), groupname){
+  ###This function requires the following packages: dplyr, ggplot2 and plotly.
+  
+  ## enquo captures expressions that you supply, in this case the column name.
+  column <- enquo(column)
+  groupname <- enquo(groupname)
+  
+  m <- list(l = 50, r = 50, b = 75, t = 75, pad = 6)
+  
+  data2 <- data %>% 
+    ##!! unquotes
+    group_by(!!column, !!groupname) %>% 
+    count() %>%
+    ungroup() %>% 
+    mutate(percent=ceiling(100*(`n`/sum(`n`)))) %>%
+    group_by(!!groupname, add = T) %>% 
+    #    mutate(group_percent = paste0(ceiling(100*count/count, 2), "%")) %>% 
+    mutate(group_percent = ceiling(`n`/sum(`n`)*100)) %>% 
+    ungroup() %>% 
+    #    mutate(percent_nongermmulti = ceiling(100*(`n`/sum(`n`))) if {!!groupname == "NonGermMulti"}) %>% 
+    mutate(column := as.factor(!!column)) %>% 
+    mutate(groupname := as.factor(!!groupname)) %>% 
+    select(column, group_percent, percent, `n`, groupname)
+
+  
+  p <- plot_ly(data = data2, values=~percent, type = "pie", visible = T, showlegend = F, textinfo = "label", hoverinfo = "text", labels = ~paste(column, "</br></br></br>", percent, "%"), text = ~paste(column, "</br></br>", groupname, "</br>", percent, "%")) %>% 
+    add_trace(data = subset(data2, groupname == "NonGermMulti"), labels = ~paste(column), values = ~group_percent, visible = F, hoverinfo = "text", text = ~paste(column, "</br></br>", group_percent, "%")) %>%
+    add_trace(data = subset(data2, groupname == "NonGermAnglo"), labels = ~paste(column), values = ~group_percent, visible = F, hoverinfo = "text", text = ~paste(column, "</br></br>", group_percent, "%")) %>%
+    add_trace(data = subset(data2, groupname == "German"), labels = ~paste(column), values = ~group_percent, visible = F, hoverinfo = "text", text = ~paste(column, "</br></br>", group_percent, "%")) %>%
+    add_trace(data = subset(data2, groupname == "English"), labels = ~paste(column), values = ~group_percent, visible = F, hoverinfo = "text", text = ~paste(column, "</br></br>", group_percent, "%")) %>%
+    add_trace(data = subset(data2, groupname == "EnglishMulti"), labels = ~paste(column), values = ~group_percent, visible = F, hoverinfo = "text", text = ~paste(column, "</br></br>", group_percent, "%")) %>%
+    
+    layout(autosize = F, margin = m) %>% 
+    
+    layout(title = legend.label,
+           updatemenus = list(
+             list(
+               type = 'dropdown',
+               active = 0,
+               buttons = list(
+                 list(method = "restyle",
+                      args = list("visible", list(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE)),
+                      label = "All"),
+                 list(method = "restyle",
+                      args = list("visible", list(FALSE, TRUE, FALSE, FALSE, FALSE, FALSE)),
+                      label = "NonGermMulti"),
+                 list(method = "restyle",
+                      args = list("visible", list(FALSE, FALSE, TRUE, FALSE, FALSE, FALSE)),
+                      label = "NonGermAnglo"),
+                 list(method = "restyle",
+                      args = list("visible", list(FALSE, FALSE, FALSE, TRUE, FALSE, FALSE)),
+                      label = "German"),
+                 list(method = "restyle",
+                      args = list("visible", list(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE)),
+                      label = "English"), 
+                 list(method = "restyle",
+                      args = list("visible", list(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE)),
+                      label = "EnglishMulti")))))
+  p
+  
+}
+```
+```{r echo=FALSE, warning=FALSE}
+p4 <- plot_pie_2(multilangparents, column = X10a..How.many.children.do.you.have..if.at.all., legend.label = "Number of Children", groupname = group)
+p4
+```

@@ -1,0 +1,27 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1597151082682.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "F203D04C",
+    "lastKnownWriteTime" : 1597326490,
+    "last_content_update" : 1597326490377,
+    "path" : "~/GitHub/Scott-Lewis/Plotly_subset.Rmd",
+    "project_path" : "Plotly_subset.Rmd",
+    "properties" : {
+        "cursorPosition" : "176,9",
+        "last_setup_crc32" : "",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

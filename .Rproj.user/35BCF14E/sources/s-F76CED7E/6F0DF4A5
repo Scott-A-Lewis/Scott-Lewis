@@ -1,0 +1,33 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1599041278895.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "6F0DF4A5",
+    "lastKnownWriteTime" : 15199949394411571,
+    "last_content_update" : 1599041278895,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "EF20027",
+        "caption" : "multilangdata",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=multilangdata&cache_key=EF20027",
+        "displayedObservations" : 894,
+        "environment" : "",
+        "expression" : "multilangdata",
+        "object" : "multilangdata",
+        "preview" : 0,
+        "totalObservations" : 894,
+        "variables" : 75
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 9,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}
