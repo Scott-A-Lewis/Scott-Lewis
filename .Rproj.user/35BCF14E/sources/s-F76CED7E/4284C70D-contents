@@ -1,5 +1,5 @@
 ---
-  title: "Example plots"
+  title: "Adding a dropdown menu to a ggplotly barplot"
 output: html_document
 ---
   
@@ -20,7 +20,7 @@ h4 {background-color: #A52A2A;
     padding: 12px}
 ```
 
-## This is the kind of thing that can be plotted on a webpage
+## Adding a drop down menu to a ggplotly barplot
 Dropdown menus can let the reader look at columns of interest. Instead of plotting multiple charts, they can look at the charts that interest them.
 <p>
   **Below is some fake_data used to generate the plot**
