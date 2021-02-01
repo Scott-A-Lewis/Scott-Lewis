@@ -7,10 +7,7 @@ navbar:
       
   right:
     - text: "Reading in Files"
-      icon: ion-icon name="folder"
-      menu:
-        text: "Reading in Files"
-        href: Reading-data.html
+      href: Reading-data.html
     - text: "Plotting"
       icon: ion-icon name="cellular-outline"
       menu:
