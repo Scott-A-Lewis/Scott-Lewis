@@ -6,10 +6,10 @@ navbar:
       href: index.html
       
   right:
-    - text: "Reading data"
-      href: Reading_data.html
-    - text: "Plotting"
+    - text: "Reading Data and Plotting"
       menu:
+        - text: "Reading data"
+          href: Reading_data.html
         - text: "Barplots"
           href: Plotting_file.html
         - text: "Barplot using ggplotly"
